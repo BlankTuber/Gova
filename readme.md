@@ -9,3 +9,7 @@
 ## Is this free to use?
 
 - *Yes, use it however you want, but, make sure you're double checking that everything is safe and working, don't just assume it's perfect*
+
+## About the projects under the project.md and the projects tab
+
+- *Unless a folder for the given project has been made, it is probably just a placeholder project (like, an idea with a small description), which means it might change at any moment.*
