@@ -1,21 +1,198 @@
 {
-  "name": "blank-s-comment-remover",
+  "name": "blank-comment-remover",
   "displayName": "Blank's Comment Remover",
-  "description": "We all need a comment remover in this day and age if you know what I mean :P",
-  "version": "0.0.1",
+  "description": "A VS Code extension to remove comments from files and folders.",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.95.0"
   },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [],
+  "categories": ["Other"],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "blank-s-comment-remover.helloWorld",
-      "title": "Hello World"
-    }]
+    "commands": [
+      {
+        "command": "extension.removeCommentsFromFile",
+        "title": "Remove Comments from File"
+      },
+      {
+        "command": "extension.removeCommentsFromFolder",
+        "title": "Remove Comments from Folder"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "extension.removeCommentsFromFile",
+          "when": "resourceLangId && resourceScheme == 'file'",
+          "group": "navigation"
+        },
+        {
+          "command": "extension.removeCommentsFromFolder",
+          "when": "!resourceLangId && resourceScheme == 'file'",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "configuration": {
+    "type": "object",
+    "title": "Comment Remover Settings",
+    "properties": {
+      "commentRemover.patterns": {
+        "type": "object",
+        "description": "Custom comment patterns for different file types. Specify singleLine and block patterns as regular expressions.",
+        "default": {
+          "js": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "ts": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "py": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "java": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "c": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "cpp": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "html": {
+            "singleLine": "<!--.*?-->",
+            "block": "<!--[\\s\\S]*?-->"
+          },
+          "css": {
+            "singleLine": null,
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "php": {
+            "singleLine": "//.*$|#.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "json": {
+            "singleLine": null,
+            "block": null
+          },
+          "xml": {
+            "singleLine": null,
+            "block": "<!--[\\s\\S]*?-->"
+          },
+          "yaml": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "toml": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "rb": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "swift": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "go": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "rs": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "sql": {
+            "singleLine": "--.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "sh": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "bat": {
+            "singleLine": "REM.*$",
+            "block": null
+          },
+          "ps1": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "pl": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "lua": {
+            "singleLine": "--.*$",
+            "block": "--\\[\\[[\\s\\S]*?\\]\\]"
+          },
+          "kt": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "scala": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "dart": {
+            "singleLine": "//.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "r": {
+            "singleLine": "#.*$",
+            "block": null
+          },
+          "m": {
+            "singleLine": "%.*$",
+            "block": null
+          },
+          "asm": {
+            "singleLine": ";.*$",
+            "block": null
+          },
+          "hs": {
+            "singleLine": "--.*$",
+            "block": "{-[\\s\\S]*?-}"
+          },
+          "elm": {
+            "singleLine": "--.*$",
+            "block": "{-[\\s\\S]*?-}"
+          },
+          "clj": {
+            "singleLine": ";.*$",
+            "block": null
+          },
+          "scm": {
+            "singleLine": ";.*$",
+            "block": null
+          },
+          "lisp": {
+            "singleLine": ";.*$",
+            "block": null
+          },
+          "vb": {
+            "singleLine": "'.*$",
+            "block": "/\\*[\\s\\S]*?\\*/"
+          },
+          "pas": {
+            "singleLine": "//.*$",
+            "block": "\\{[\\s\\S]*?\\}|\\(\\*[\\s\\S]*?\\*\\)"
+          },
+          "f90": {
+            "singleLine": "!.*$",
+            "block": null
+          }
+        }
+      }
+    }
   },
   "scripts": {
     "lint": "eslint .",
@@ -24,10 +201,8 @@
   },
   "devDependencies": {
     "@types/vscode": "^1.95.0",
-    "@types/mocha": "^10.0.9",
-    "@types/node": "20.x",
-    "eslint": "^9.13.0",
-    "@vscode/test-cli": "^0.0.10",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
     "@vscode/test-electron": "^2.4.1"
   }
 }

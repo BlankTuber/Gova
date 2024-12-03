@@ -1,65 +1,27 @@
-# blank-s-comment-remover README
+# Blank's Comment Remover
 
-This is the README for your extension "blank-s-comment-remover". After writing up a brief description, we recommend including the following sections.
+We all need a comment remover in this day and age if you know what I mean :P
 
-## Features
+- *Delete all comments in a file.*
+- *Delete all comments in every file in a directory/folder.*
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Usage
 
-For example if there is an image subfolder under your extension project workspace:
+1. Right-click on a file or folder in the Explorer view.
+2. Select "Remove Comments from File" or "Remove Comments from Folder".
+3. Review the changes to ensure correctness.
 
-\!\[feature X\]\(images/feature-x.png\)
+## 1.0.0
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Release of this extension
 
-## Requirements
+Custom settings example:
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+```json
+"commentRemover.patterns": {
+  "customLang": {
+    "singleLine": "//.*$",
+    "block": "/\\*[\\s\\S]*?\\*/"
+  }
+}
+```
