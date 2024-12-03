@@ -1,114 +1,160 @@
-# **General Programming & Algorithms**
-
-1. **Text-Based Adventure Game**  
-   - Create an interactive story game in the terminal.
-   - Include inventory management, branching paths, and combat mechanics.
-
-2. **Sorting Algorithm Visualizer (Console)**  
-   - Display sorting algorithms step-by-step in the terminal using animations.
+# **Projects & Roadmap**
 
 ---
 
-## **Data Processing**
+## **1. Bookmark Sorting Browser Extension**  
 
-1. **CSV Processor**  
-    - Build a tool to filter, sort, and summarize CSV files.
-    - Bonus: Add support for command-line arguments.
-
-2. **JSON - XML Converter**  
-    - Create a program to transform JSON files into XML and vice versa.
-
----
-
-## **Networking**
-
-1. **HTTP Request Inspector**  
-   - A tool to send GET/POST requests and display server responses.
-   - Bonus: Support custom headers and JSON payloads.
-
-2. **Build a network scanner:** Discover devices on your network.
-
-3. **Create a packet sniffer:** Analyze network traffic.
+- **Goal**: Build a browser extension that organizes bookmarks by tags or categories, with options for sorting and filtering.  
+- **What to Use**: JavaScript (for browser extension compatibility) or Go (for backend services if needed).  
+- **What to Do**:  
+  - Create the basic extension interface.  
+  - Implement sorting and filtering logic.  
+  - Add storage for user preferences.
 
 ---
 
-## **Utilities**
+## **2. VS Code Comment Remover Extension**  
 
-1. **Static Site Generator**  
-    - Convert a folder of Markdown files into a complete static HTML website.
-    - Bonus: Add templates for customization.
-
-2. **Image Metadata Viewer**  
-    - Extract EXIF data from images (e.g., resolution, timestamp).
-
----
-
-## **System Programming**
-
-1. **Write a system monitor:** Track CPU, memory, and disk usage.
-
-2. **Compression tool implementing Huffman or LZ77 encoding**
-
-3. **Memory profiler for analyzing program heap usage**
+- **Goal**: Create an extension for VS Code that removes or toggles comments from code files.  
+- **What to Use**: TypeScript (for extension logic) and JavaScript (if interacting with the webview).  
+- **What to Do**:  
+  - Develop the extension structure.  
+  - Use VS Code API to manipulate code files.  
+  - Handle multiple programming languages for comment styles.
 
 ---
 
-## **Machine Learning and AI**
+## **3. Markdown to HTML Converter**  
 
-1. **Train a simple neural network:** Using a library like TensorFlow or PyTorch.
-
----
-
-## **Web Development**
-
-1. **Create a web scraper:** Extract data from websites.
-
----
-
-## **Other Ideas**
-
-1. **Write a text editor:** A simple editor with basic features.
-
-2. **Implement a cryptography library:** For encryption and decryption.
-
-3. **Personal finance tracker with SQLite backend**
+- **Goal**: Convert markdown documents to HTML using a simple command-line tool.  
+- **What to Use**: Go or D (due to simplicity and strong string manipulation capabilities).  
+- **What to Do**:  
+  - Parse markdown syntax (headers, lists, links).  
+  - Convert markdown elements to appropriate HTML tags.  
+  - Support for optional features like table of contents.
 
 ---
 
-## **Image Processing**
+## **4. Procedurally Generated Roguelike**  
 
-1. Use libraries like Rust's `image`, Go's `github.com/disintegration/imaging`, or Java's `BufferedImage` to process and manipulate images.
+- **Goal**: Develop a simple roguelike game with procedurally generated maps, enemies, and loot.  
+- **What to Use**: Go (for performance and simplicity).  
+- **What to Do**:  
+  - Create a random dungeon generator.  
+  - Implement basic game mechanics (combat, inventory).  
+  - Add procedurally generated content like enemies and loot.
 
 ---
 
-## **Embedded Systems**
+## **5. Screen Time Tracker**  
 
-1. Work on projects involving embedded systems using microcontrollers and programming them in Rust, Go, or Java.
+- **Goal**: Track screen time for users, including statistics for different applications.  
+- **What to Use**: Go (for system monitoring) or V (if using a minimalistic approach).  
+- **What to Do**:  
+  - Track active applications and their run times.  
+  - Display data in a user-friendly format.  
+  - Optionally, include break reminders and time limits.
 
 ---
 
-## **Game Modding / Plugin / Addon Ideas**
+## **6. Custom VPN**  
 
-1. **Minecraft Plugin (Java)**  
-   - Create a plugin to add new features or mechanics, like custom mobs or game rules.
+- **Goal**: Build a simple VPN server and client.  
+- **What to Use**: Go (for networking features) or Nim (for low-level control over networking).  
+- **What to Do**:  
+  - Implement VPN tunneling protocol (e.g., OpenVPN, WireGuard).  
+  - Set up secure communication between the client and server.  
+  - Support encryption and data routing.
 
-2. **Skyrim Mod (Creation Kit)**  
-   - Develop a mod to add new quests, characters, or locations to Skyrim.
+---
 
-3. **World of Warcraft Addon (Lua)**  
-   - Write an addon that tracks in-game events, such as cooldowns, inventory, or quest progress.
+## **7. Peer-to-Peer File Sharing Program**  
 
-4. **Custom Game Modes (Unity/Unreal Engine)**  
-   - Develop a new game mode for an existing game, like a battle royale or a puzzle challenge.
+- **Goal**: Develop a P2P file-sharing application without relying on a server.  
+- **What to Use**: Go (for networking) or Nim (for low-level control).  
+- **What to Do**:  
+  - Implement file transfer logic.  
+  - Set up peer discovery using a decentralized protocol.  
+  - Handle file encryption and compression.
 
-5. **Fallout New Vegas Mod (GECK)**  
-   - Create a mod that expands the lore with new factions, stories, or dialogue options.
+---
 
-6. **Garry's Mod Addon (Lua)**  
-   - Create new game modes or entities, like custom vehicles or weapons, for Garry's Mod.
+## **8. CSV Processor**  
 
-7. **The Sims 4 Mod (Python)**  
-   - Develop a mod to add new interactions, careers, or custom assets into The Sims 4.
+- **Goal**: Build a tool to filter, sort, and summarize CSV files, with support for command-line arguments.  
+- **What to Use**: D (due to powerful file handling) or Go (due to simplicity in file I/O and argument parsing).  
+- **What to Do**:  
+  - Implement functions for parsing CSV files.  
+  - Add filtering and sorting capabilities.  
+  - Provide a summary or statistics from the CSV data.
 
-8. **RimWorld Mod (C#)**  
-   - Add new mechanics, like advanced technologies or new world generation features, into RimWorld.
+---
+
+## **9. Image Metadata Viewer**  
+
+- **Goal**: Extract and display metadata from image files (EXIF data, resolution, timestamp, etc.).  
+- **What to Use**: Go (easy integration with libraries for image processing) or D (due to system-level control).  
+- **What to Do**:  
+  - Parse image files to retrieve EXIF metadata.  
+  - Display the extracted metadata in a clean format.  
+  - Support multiple image formats (JPEG, PNG, TIFF).
+
+---
+
+## **10. HTTP Request Inspector**  
+
+- **Goal**: A tool to send GET/POST requests and display the server responses, useful for API testing.  
+- **What to Use**: Go (due to built-in HTTP support).  
+- **What to Do**:  
+  - Implement GET and POST request methods.  
+  - Allow users to customize headers and payloads.  
+  - Display responses and handle errors gracefully.
+
+---
+
+## **11. Static Site Generator**  
+
+- **Goal**: Convert a folder of Markdown files into a complete HTML website.  
+- **What to Use**: D (for fast processing) or Go (for performance with web server integration).  
+- **What to Do**:  
+  - Parse Markdown files and convert them into HTML.  
+  - Generate static pages, including an index and template support.  
+  - Handle links, images, and optional metadata.
+
+---
+
+## **12. Custom Shell**  
+
+- **Goal**: Create a simple custom shell for executing commands, piping input/output, and managing processes.  
+- **What to Use**: Go (for simplicity and performance) or Nim (for low-level system access).  
+- **What to Do**:  
+  - Implement basic shell features (command execution, arguments, piping).  
+  - Manage background tasks and job control.  
+  - Provide custom commands and error handling.
+
+## **13. Desktop Note-Taking Application**  
+
+- **Goal**: Build a desktop application for creating, organizing, and searching notes.  
+- **What to Use**: Go (for simplicity and GUI libraries), or D (if using bindings for a GUI toolkit).  
+- **What to Do**:  
+  - Develop a basic GUI with support for creating, editing, and deleting notes.  
+  - Implement features like search, categorization, and persistent storage (e.g., local file storage or a simple database).  
+  - Add optional features like encryption for sensitive notes or synchronization across multiple devices.
+
+---
+
+### **Roadmap (From Easy & Fast to Hard & Slow)**
+
+1. **VS Code Comment Remover Extension**: Fast to implement with basic file manipulation.
+2. **Bookmark Sorting Browser Extension**: Simple extension with UI, fast and easy.
+3. **Markdown to HTML Converter**: Basic parsing and conversion.
+4. **CSV Processor**: Requires parsing and handling of data structures.
+5. **Screen Time Tracker**: Simple system monitoring with file output.
+6. **Desktop Note-Taking Application**: GUI development and data persistence.
+7. **HTTP Request Inspector**: Basic networking and API interaction.
+8. **Static Site Generator**: Requires parsing and basic template handling.
+9. **Peer-to-Peer File Sharing Program**: Networking complexity increases.
+10. **Image Metadata Viewer**: File parsing and handling, moderate difficulty.
+11. **Custom Shell**: Involves system-level programming and process management.
+12. **Custom VPN**: Networking and encryption complexities.
+13. **Procedurally Generated Roguelike**: Full game development with random generation.
