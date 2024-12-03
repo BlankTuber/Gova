@@ -1,5 +1,6 @@
 {
   "name": "blank-comment-remover",
+  "publisher": "QuidqueStudio",
   "displayName": "Blank's Comment Remover",
   "description": "A VS Code extension to remove comments from files and folders.",
   "version": "1.0.0",
@@ -8,36 +9,38 @@
   },
   "categories": ["Other"],
   "main": "./extension.js",
-  "activationEvents": [
-    "onCommand:remove-comments.fromFile",
-    "onCommand:remove-comments.fromFolder"
-  ],
   "contributes": {
     "commands": [
       {
         "command": "extension.removeCommentsFromFile",
-        "title": "Remove Comments from File"
+        "title": "Remove Comments from File",
+        "category": "Comment Remover"
       },
       {
         "command": "extension.removeCommentsFromFolder",
-        "title": "Remove Comments from Folder"
+        "title": "Remove Comments from Folder",
+        "category": "Comment Remover"
       }
     ],
     "menus": {
       "explorer/context": [
         {
           "command": "extension.removeCommentsFromFile",
-          "when": "resourceLangId && resourceScheme == 'file'",
+          "when": "!explorerResourceIsFolder",
           "group": "navigation"
         },
         {
           "command": "extension.removeCommentsFromFolder",
-          "when": "!resourceLangId && resourceScheme == 'file'",
+          "when": "explorerResourceIsFolder",
           "group": "navigation"
         }
       ]
     }
   },
+  "activationEvents": [
+    "onCommand:extension.removeCommentsFromFile",
+    "onCommand:extension.removeCommentsFromFolder"
+  ],
   "configuration": {
     "type": "object",
     "title": "Comment Remover Settings",

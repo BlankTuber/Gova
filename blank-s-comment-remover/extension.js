@@ -154,26 +154,16 @@ const defaultCommentPatterns = {
 };
 
 function activate(context) {
-    const disposableFile = vscode.commands.registerCommand('extension.removeCommentsFromFile', (uri) => {
-        removeCommentsFromFile(uri.fsPath);
-    });
+	const disposableFile = vscode.commands.registerCommand('extension.removeCommentsFromFile', (uri) => {
+		removeCommentsFromFile(uri.fsPath);
+	});
 
-    const disposableFolder = vscode.commands.registerCommand('extension.removeCommentsFromFolder', (uri) => {
-        removeCommentsFromFolder(uri.fsPath);
-    });
+	const disposableFolder = vscode.commands.registerCommand('extension.removeCommentsFromFolder', (uri) => {
+		removeCommentsFromFolder(uri.fsPath);
+	});
 
-    context.subscriptions.push(disposableFile);
-    context.subscriptions.push(disposableFolder);
-
-	context.subscriptions.push(
-		vscode.commands.registerCommand('remove-comments.fromFile', function () {
-			vscode.window.showInformationMessage('Remove Comments from File triggered!');
-		}),
-		vscode.commands.registerCommand('remove-comments.fromFolder', function () {
-			vscode.window.showInformationMessage('Remove Comments from Folder triggered!');
-		})
-	);
-	
+	context.subscriptions.push(disposableFile);
+	context.subscriptions.push(disposableFolder);
 }
 
 function getCommentPatterns() {
@@ -182,12 +172,23 @@ function getCommentPatterns() {
 }
 
 function removeCommentsFromFile(filePath) {
+    try {
+        const stats = fs.statSync(filePath);
+        if (!stats.isFile()) {
+            vscode.window.showErrorMessage(`This is not a file, or file does not exist: ${filePath}`);
+            return;
+        }
+    } catch (err) {
+        vscode.window.showErrorMessage(`Error checking file: ${err.message}`);
+        return;
+    }
+
     fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
             vscode.window.showErrorMessage(`Error reading file: ${err.message}`);
             return;
         }
-		console.log(`Processing file: ${filePath}`);
+        console.log(`Processing file: ${filePath}`);
 
         const fileExtension = path.extname(filePath).substring(1);
         const patterns = getCommentPatterns()[fileExtension];
@@ -201,16 +202,14 @@ function removeCommentsFromFile(filePath) {
 
         if (patterns.singleLine) {
             uncommentedText = uncommentedText.replace(new RegExp(patterns.singleLine, 'gm'), '');
-
         }
 
         if (patterns.block) {
-			uncommentedText = uncommentedText.replace(new RegExp(patterns.block, 'gm'), '');
+            uncommentedText = uncommentedText.replace(new RegExp(patterns.block, 'gs'), '');
         }
 
-		console.log(`Before: ${data}`);
-		console.log(`After: ${uncommentedText}`);
-
+        console.log(`Before: ${data}`);
+        console.log(`After: ${uncommentedText}`);
 
         fs.writeFile(filePath, uncommentedText, 'utf8', (err) => {
             if (err) {
@@ -229,18 +228,24 @@ function removeCommentsFromFolder(folderPath) {
             return;
         }
 
+        vscode.window.showInformationMessage(`Found ${files.length} files in the folder.`);
+        console.log(`Found files: ${files.join(', ')}`);
+
         files.forEach((file) => {
+            console.log(`Processing file: ${file}`);
+            vscode.window.showInformationMessage(`Processing: ${file}`);
+
             const filePath = path.join(folderPath, file);
             try {
-				const stats = fs.statSync(filePath);
-				if (stats.isFile()) {
-					removeCommentsFromFile(filePath);
-				} else if (stats.isDirectory()) {
-					removeCommentsFromFolder(filePath);
-				}
-			} catch (err) {
-				vscode.window.showErrorMessage(`Error processing ${filePath}: ${err.message}`);
-			}			
+                const stats = fs.statSync(filePath);
+                if (stats.isFile()) {
+                    removeCommentsFromFile(filePath);
+                } else if (stats.isDirectory()) {
+                    removeCommentsFromFolder(filePath);
+                }
+            } catch (err) {
+                vscode.window.showErrorMessage(`Error processing ${filePath}: ${err.message}`);
+            }
         });
     });
 }
