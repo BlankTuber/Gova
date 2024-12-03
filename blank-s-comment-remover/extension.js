@@ -164,6 +164,16 @@ function activate(context) {
 
     context.subscriptions.push(disposableFile);
     context.subscriptions.push(disposableFolder);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('remove-comments.fromFile', function () {
+			vscode.window.showInformationMessage('Remove Comments from File triggered!');
+		}),
+		vscode.commands.registerCommand('remove-comments.fromFolder', function () {
+			vscode.window.showInformationMessage('Remove Comments from Folder triggered!');
+		})
+	);
+	
 }
 
 function getCommentPatterns() {
@@ -177,6 +187,7 @@ function removeCommentsFromFile(filePath) {
             vscode.window.showErrorMessage(`Error reading file: ${err.message}`);
             return;
         }
+		console.log(`Processing file: ${filePath}`);
 
         const fileExtension = path.extname(filePath).substring(1);
         const patterns = getCommentPatterns()[fileExtension];
@@ -189,12 +200,17 @@ function removeCommentsFromFile(filePath) {
         let uncommentedText = data;
 
         if (patterns.singleLine) {
-            uncommentedText = uncommentedText.replace(patterns.singleLine, '');
+            uncommentedText = uncommentedText.replace(new RegExp(patterns.singleLine, 'gm'), '');
+
         }
 
         if (patterns.block) {
-            uncommentedText = uncommentedText.replace(patterns.block, '');
+			uncommentedText = uncommentedText.replace(new RegExp(patterns.block, 'gm'), '');
         }
+
+		console.log(`Before: ${data}`);
+		console.log(`After: ${uncommentedText}`);
+
 
         fs.writeFile(filePath, uncommentedText, 'utf8', (err) => {
             if (err) {

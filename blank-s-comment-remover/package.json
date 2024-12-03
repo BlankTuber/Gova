@@ -8,6 +8,10 @@
   },
   "categories": ["Other"],
   "main": "./extension.js",
+  "activationEvents": [
+    "onCommand:remove-comments.fromFile",
+    "onCommand:remove-comments.fromFolder"
+  ],
   "contributes": {
     "commands": [
       {
@@ -193,6 +197,10 @@
         }
       }
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BlankTuber/Gova/tree/071220301341ea128bfd14d9b89c4f7eb198f2ef/blank-s-comment-remover"
   },
   "scripts": {
     "lint": "eslint .",
