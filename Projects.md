@@ -1,5 +1,7 @@
 # **Projects & Roadmap**
 
+- *Yes, this was made in collaboration with ChatGPT*
+
 ---
 
 ## **1. Bookmark Sorting Browser Extension**  
