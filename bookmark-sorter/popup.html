@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <h1>Bookmark Sorter</h1>
+        <select id="sorting-method-select">
+            <option value="dateAdded">Date Added (Descending)</option>
+            <option value="dateAddedOrder">Date Added (Ascending)</option>
+            <option value="title">Title (Alphabetical, A-Z)</option>
+            <option value="titleOrder">Title (Alphabetical, Z-A)</option>
+        </select>
+        <div>
+            <button id="sort">Sort Bookmarks</button>
+        </div>
+        <div id="results"></div>
+        <script src="popup.js"></script>
+    </body>
+</html>

@@ -1,0 +1,68 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 10px;
+    background-color: #002916;
+    color: aliceblue;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Select and Button Styles */
+select, button {
+    display: block;
+    margin: 0 auto;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+select {
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #3b639e;
+    color: lightgreen;
+    font-weight: bolder;
+    cursor: pointer;
+    transition-duration: 0.4s;
+}
+
+button:hover {
+    background-color: #7d7fc9;
+}
+
+#results {
+    margin-top: 20px;
+    text-align: center;
+}
+
+#results.loading {
+    font-size: 18px;
+    font-weight: bold;
+    color: #bbbbbb;
+}
+
+#results.loading::before {
+    content: "Sorting bookmarks...";
+    animation: loading 1s infinite;
+}
+
+@keyframes loading {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
