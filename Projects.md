@@ -26,18 +26,7 @@
 
 ---
 
-## **3. Markdown to HTML Converter**  
-
-- **Goal**: Convert markdown documents to HTML using a simple command-line tool.  
-- **What to Use**: Go (for simplicity and strong string manipulation capabilities).  
-- **What to Do**:  
-  - Parse markdown syntax (headers, lists, links).  
-  - Convert markdown elements to appropriate HTML tags.  
-  - Support for optional features like table of contents.
-
----
-
-## **4. Procedurally Generated Roguelike**  
+## **3. Procedurally Generated Roguelike**  
 
 - **Goal**: Develop a simple roguelike game with procedurally generated maps, enemies, and loot.  
 - **What to Use**: Go (for performance and simplicity).  
@@ -48,7 +37,7 @@
 
 ---
 
-## **5. Screen Time Tracker**  
+## **4. Screen Time Tracker**  
 
 - **Goal**: Track screen time for users, including statistics for different applications.  
 - **What to Use**: Go (for system monitoring).  
@@ -59,7 +48,7 @@
 
 ---
 
-## **6. Custom VPN**  
+## **5. Custom VPN**  
 
 - **Goal**: Build a simple VPN server and client.  
 - **What to Use**: Go (for networking features).  
@@ -70,7 +59,7 @@
 
 ---
 
-## **7. Peer-to-Peer File Sharing Program**  
+## **6. Peer-to-Peer File Sharing Program**  
 
 - **Goal**: Develop a P2P file-sharing application without relying on a server.  
 - **What to Use**: Go (for networking).  
@@ -81,18 +70,7 @@
 
 ---
 
-## **8. CSV Processor**  
-
-- **Goal**: Build a tool to filter, sort, and summarize CSV files, with support for command-line arguments.  
-- **What to Use**: Go (due to simplicity in file I/O and argument parsing).  
-- **What to Do**:  
-  - Implement functions for parsing CSV files.  
-  - Add filtering and sorting capabilities.  
-  - Provide a summary or statistics from the CSV data.
-
----
-
-## **9. Image Metadata Viewer**  
+## **8. Image Metadata Viewer**  
 
 - **Goal**: Extract and display metadata from image files (EXIF data, resolution, timestamp, etc.).  
 - **What to Use**: Go (easy integration with libraries for image processing).  
@@ -103,7 +81,7 @@
 
 ---
 
-## **10. HTTP Request Inspector**  
+## **9. HTTP Request Inspector**  
 
 - **Goal**: A tool to send GET/POST requests and display the server responses, useful for API testing.  
 - **What to Use**: Go (due to built-in HTTP support).  
@@ -114,7 +92,7 @@
 
 ---
 
-## **11. Static Site Generator**  
+## **10. Static Site Generator**  
 
 - **Goal**: Convert a folder of Markdown files into a complete HTML website.  
 - **What to Use**: Go (for performance with web server integration).  
@@ -125,7 +103,7 @@
 
 ---
 
-## **12. Custom Shell**  
+## **11. Custom Shell**  
 
 - **Goal**: Create a simple custom shell for executing commands, piping input/output, and managing processes.  
 - **What to Use**: Go (for simplicity and performance).  
@@ -136,7 +114,7 @@
 
 ---
 
-## **13. Desktop Note-Taking Application**  
+## **12. Desktop Note-Taking Application**  
 
 - **Goal**: Build a desktop application for creating, organizing, and searching notes.  
 - **What to Use**: Go (for simplicity and GUI libraries).  
@@ -151,14 +129,12 @@
 
 1. **VS Code Comment Remover Extension**: Fast to implement with basic file manipulation.
 2. **Bookmark Sorting Browser Extension**: Simple extension with UI, fast and easy.
-3. **Markdown to HTML Converter**: Basic parsing and conversion.
-4. **CSV Processor**: Requires parsing and handling of data structures.
-5. **Screen Time Tracker**: Simple system monitoring with file output.
-6. **Desktop Note-Taking Application**: GUI development and data persistence.
-7. **HTTP Request Inspector**: Basic networking and API interaction.
-8. **Static Site Generator**: Requires parsing and basic template handling.
-9. **Peer-to-Peer File Sharing Program**: Networking complexity increases.
-10. **Image Metadata Viewer**: File parsing and handling, moderate difficulty.
-11. **Custom Shell**: Involves system-level programming and process management.
-12. **Custom VPN**: Networking and encryption complexities.
-13. **Procedurally Generated Roguelike**: Full game development with random generation.
+3. **Screen Time Tracker**: Simple system monitoring with file output.
+4. **Desktop Note-Taking Application**: GUI development and data persistence.
+5. **HTTP Request Inspector**: Basic networking and API interaction.
+6. **Static Site Generator**: Requires parsing and basic template handling.
+7. **Peer-to-Peer File Sharing Program**: Networking complexity increases.
+8. **Image Metadata Viewer**: File parsing and handling, moderate difficulty.
+9. **Custom Shell**: Involves system-level programming and process management.
+10. **Custom VPN**: Networking and encryption complexities.
+11. **Procedurally Generated Roguelike**: Full game development with random generation.
