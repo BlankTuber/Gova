@@ -28,8 +28,6 @@ impl FileStorage {
 
     pub fn save_entries(&self, entries: &[PasswordEntry]) -> Result<(), &'static str> {
         let mut content = String::new();
-        
-        // Format: username|password|place\n
         for entry in entries {
             content.push_str(&format!(
                 "{}\t{}\t{}\n",
@@ -62,7 +60,7 @@ impl FileStorage {
         for line in content.lines() {
             let parts: Vec<&str> = line.split('\t').collect();
             if parts.len() != 3 {
-                continue; // Skip invalid lines
+                continue;
             }
 
             if let Ok(entry) = PasswordEntry::new(
