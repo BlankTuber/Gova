@@ -1,57 +1,225 @@
-# Password Manager Implementation Plan
+# Password Manager Implementation Guide
 
-## Core Requirements
+## Development Order and Details
 
-- CSV import/export (Google format compatible)
-- Password encryption/decryption
-- Interactive TUI with keyboard navigation
-- Local encrypted storage
-- Cross-platform support (Windows/Linux)
+### 1. Initial Setup (Day 1-2)
 
-## Project Roadmap
+1. Create new Rust project:
+   ```bash
+   cargo new password_manager
+   cd password_manager
+   ```
 
-### Phase 1: Core Setup (1 week)
+2. Add required dependencies to Cargo.toml:
+   - rpassword: Password input
+   - serde: Serialization
+   - csv: CSV handling
+   - aes-gcm: Encryption
+   - argon2: Password hashing
+   - crossterm: TUI support
+   - tui: Terminal interface
+   - chrono: Time handling
+   - thiserror: Error handling
 
-- Basic project structure
-- Data structures for password entries
-- File path handling for both platforms
-- Master password setup and validation
+3. Create the basic file structure as outlined in the project plan
 
-### Phase 2: CSV Operations (1 week)
+### 2. Core Data Structures (Day 2-3)
 
-- Import system
-  - Google Chrome format parsing
-  - Basic validation
-  - Error handling
-- Export system
-  - Google Chrome format output
-  - Basic field mapping
+1. Create models/entry.rs first:
+   - Implement PasswordEntry struct with all fields
+   - Add validation logic for URLs and usernames
+   - Implement CSV conversion methods
+   - Add tests for all core functionality
 
-### Phase 3: Encryption (1 week)
+2. Create crypto/encryption.rs:
+   - Implement key derivation using Argon2
+   - Add encryption using AES-GCM
+   - Create helper methods for salt generation
+   - Add comprehensive tests for crypto operations
 
-- Master key derivation
-- Password encryption/decryption
-- Secure storage format
-- Basic file operations
+3. Create storage/file.rs:
+   - Implement basic file operations
+   - Add backup functionality
+   - Create vault format specification
+   - Add error handling for all IO operations
 
-### Phase 4: CLI and TUI (1-2 weeks)
+### 3. Platform-Specific Code (Day 4-5)
 
-- Basic commands (CLI):
-  - init: Create vault
-  - add: New entry
-  - get: Retrieve entry
-  - list: Show entries
-  - edit: Modify entry
-  - delete: Remove entry
-  - import/export: CSV handling
-  - change-master: Update master password
+1. Create platform/mod.rs:
+   - Define the PlatformOperations trait
+   - Add platform detection logic
 
-- Interactive Interface (TUI):
-  - Main menu with arrow key navigation
-  - Password list with search/filter
-  - Entry viewer/editor with form navigation
-  - Interactive import/export wizard
-  - Status bar with shortcuts
+2. Implement platform/unix.rs:
+   - Add Unix-specific path handling
+   - Implement file permissions
+   - Add error handling for Unix systems
+
+3. Implement platform/windows.rs:
+   - Add Windows-specific path handling
+   - Implement file permissions
+   - Add error handling for Windows systems
+
+### 4. CSV Operations (Day 6-7)
+
+1. Create storage/csv.rs:
+   - Implement Google Chrome format parsing
+   - Add validation for required fields
+   - Create export functionality
+   - Add error handling for malformed CSV
+
+2. Add tests:
+   - Test with valid Chrome export
+   - Test with malformed data
+   - Test with missing fields
+   - Test round-trip import/export
+
+### 5. CLI Commands (Day 8-9)
+
+1. Create cli/commands.rs:
+   - Implement each command (Init, Add, Get, etc.)
+   - Add input validation
+   - Create help text
+   - Add error messages
+
+2. Create cli/prompt.rs:
+   - Implement secure password input
+   - Add confirmation dialogs
+   - Create input validation
+   - Add error handling
+
+### 6. TUI Implementation (Day 10-14)
+
+1. Create cli/tui/app.rs:
+   - Implement app state management
+   - Add view transitions
+   - Create search functionality
+   - Add error handling
+
+2. Create cli/tui/ui.rs:
+   - Implement main layout
+   - Add password list view
+   - Create detail view
+   - Implement help screen
+   - Add status bar
+
+3. Create cli/tui/events.rs:
+   - Implement keyboard handling
+   - Add window resize handling
+   - Create event loop
+   - Add error handling
+
+### 7. Main Application (Day 15)
+
+1. Create main.rs:
+   - Add command-line argument parsing
+   - Implement config initialization
+   - Create error handling
+   - Add logging
+
+## Implementation Details
+
+### Main Entry Point (main.rs)
+
+The main file should:
+- Parse command line arguments (CLI mode vs TUI mode)
+- Initialize logging
+- Set up error handling
+- Create platform-specific handlers
+- Initialize the vault
+- Start either CLI command processing or TUI
+
+### Encryption Layer (crypto/encryption.rs)
+
+Should implement:
+- Key derivation with Argon2 (memory: 64MB, iterations: 3, parallelism: 4)
+- AES-256-GCM for encryption
+- Secure random number generation for salts
+- Authenticated encryption for all data
+
+### Storage Format (storage/file.rs)
+
+Vault file format:
+- Header: Magic bytes + version
+- Salt: 32 bytes
+- Encrypted content:
+  - JSON-serialized vector of entries
+  - Each entry individually encrypted
+  - Authentication tag per entry
+
+### CSV Format (storage/csv.rs)
+
+Required fields:
+- name (website/application)
+- url
+- username
+- password
+Optional fields:
+- notes
+- created
+- modified
+
+### Platform-Specific Details
+
+Unix implementation:
+- File permissions: 0600
+- Directory permissions: 0700
+- Default location: ~/.config/password_manager/
+- Lock file handling
+
+Windows implementation:
+- File attributes: Hidden
+- Default location: %APPDATA%\password_manager\
+- Lock file handling
+
+### TUI Layout
+
+Main screen layout:
+```
++-------------------------+
+|  Password List    | Detail View  |
+|  [Search Bar]     |             |
+|  - Entry 1        | URL:        |
+|  - Entry 2        | Username:   |
+|  - Entry 3        | Password:   |
+|                   | Notes:      |
++-----------------------------------+
+| Status Bar  | Help: F1 | Exit: F10|
++-----------------------------------+
+```
+
+## Error Handling
+
+Implement custom error types for:
+- Crypto operations
+- File operations
+- CSV parsing
+- User input
+- Platform-specific operations
+
+Each error should:
+- Include context
+- Be user-friendly
+- Support error chaining
+- Include file/line information in debug mode
+
+## Testing Strategy
+
+1. Unit tests for:
+   - Encryption/decryption
+   - Password entry validation
+   - CSV parsing
+   - File operations
+
+2. Integration tests for:
+   - Full vault operations
+   - Import/export
+   - Platform-specific features
+
+3. End-to-end tests for:
+   - CLI commands
+   - TUI operations
+   - Error scenarios
+
 
 ## File Structure with Contents
 
@@ -210,35 +378,3 @@ src/
             fn handle_keyboard(app: &mut App, key: Key) -> Result<()>
             fn handle_resize(app: &mut App, width: u16, height: u16)
 ```
-
-## Cross-Platform Considerations
-
-### File System
-
-- Path separators (\ vs /)
-- Storage locations:
-  - Linux: ~/.config/password_manager/
-  - Windows: %APPDATA%\password_manager\
-
-### Platform-Specific Code
-
-- File operations
-- Path handling
-- Error handling
-
-### TUI Considerations
-
-- Terminal size differences
-- Key code mappings
-- Color support
-- Unicode support
-
-This implementation provides:
-
-1. Secure password storage
-2. Easy-to-use TUI interface
-3. Platform independence
-4. CSV import/export compatibility
-5. Extensible architecture
-
-The modular design allows for easy addition of features while maintaining a clean separation of concerns between UI, business logic, and platform-specific code.
