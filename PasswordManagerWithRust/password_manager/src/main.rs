@@ -1,3 +1,6 @@
+mod models;
+use models::PasswordEntry;
+
 fn main() {
-    println!("Hello, world!");
+    print!("Hello world!");
 }

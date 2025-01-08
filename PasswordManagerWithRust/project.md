@@ -1,380 +1,175 @@
-# Password Manager Implementation Guide
+# Simplified Password Manager Implementation Guide
 
-## Development Order and Details
+## Core Dependencies
+- csv: For import/export functionality
+- chrono: For timestamp handling
+- rust_crypto: For encryption operations
 
-### 1. Initial Setup (Day 1-2)
+## Project Structure
+```
+src/
+├── main.rs              # Application entry point
+├── models/
+│   ├── mod.rs           # Module exports
+│   └── entry.rs         # Password entry structure
+├── crypto/
+│   ├── mod.rs           # Module exports
+│   └── encryption.rs    # Encryption operations
+└── storage/
+    ├── mod.rs           # Module exports
+    ├── file.rs          # File operations
+    └── csv.rs           # CSV import/export
+```
 
-1. Create new Rust project:
-   ```bash
-   cargo new password_manager
-   cd password_manager
-   ```
+## Implementation Plan
 
-2. Add required dependencies to Cargo.toml:
-   - rpassword: Password input
-   - serde: Serialization
-   - csv: CSV handling
-   - aes-gcm: Encryption
-   - argon2: Password hashing
-   - crossterm: TUI support
-   - tui: Terminal interface
-   - chrono: Time handling
-   - thiserror: Error handling
+### Phase 1: Core Data Structure (Days 1-2)
 
-3. Create the basic file structure as outlined in the project plan
+1. Set up project and dependencies:
+   - Create new project with `cargo new`
+   - Add minimal dependencies to Cargo.toml
+   - Set up basic error handling structure
 
-### 2. Core Data Structures (Day 2-3)
+2. Implement password entry structure:
+   - Define fields: username, password, url
+   - Create constructors and validation methods
+   - Implement basic CRUD operations
+   - Add comprehensive tests for entry operations
 
-1. Create models/entry.rs first:
-   - Implement PasswordEntry struct with all fields
-   - Add validation logic for URLs and usernames
-   - Implement CSV conversion methods
-   - Add tests for all core functionality
-
-2. Create crypto/encryption.rs:
-   - Implement key derivation using Argon2
-   - Add encryption using AES-GCM
-   - Create helper methods for salt generation
-   - Add comprehensive tests for crypto operations
-
-3. Create storage/file.rs:
-   - Implement basic file operations
+3. Create basic file operations:
+   - Define vault file format specification
+   - Implement file reading and writing
    - Add backup functionality
-   - Create vault format specification
-   - Add error handling for all IO operations
+   - Create error types for file operations
 
-### 3. Platform-Specific Code (Day 4-5)
+### Phase 2: Encryption Layer (Days 3-4)
 
-1. Create platform/mod.rs:
-   - Define the PlatformOperations trait
-   - Add platform detection logic
+1. Set up encryption operations:
+   - Implement key derivation from master password
+   - Create salt generation functionality
+   - Add file encryption/decryption operations
+   - Write tests for crypto operations
 
-2. Implement platform/unix.rs:
-   - Add Unix-specific path handling
-   - Implement file permissions
-   - Add error handling for Unix systems
+2. Integrate encryption with storage:
+   - Add encryption to vault writing
+   - Add decryption to vault reading
+   - Implement secure memory handling
+   - Test file encryption/decryption
 
-3. Implement platform/windows.rs:
-   - Add Windows-specific path handling
-   - Implement file permissions
-   - Add error handling for Windows systems
+### Phase 3: CSV Operations (Days 5-6)
 
-### 4. CSV Operations (Day 6-7)
+1. Basic CSV functionality:
+   - Define CSV format specification
+   - Implement CSV reading
+   - Add CSV writing capabilities
+   - Create CSV validation
 
-1. Create storage/csv.rs:
-   - Implement Google Chrome format parsing
-   - Add validation for required fields
-   - Create export functionality
-   - Add error handling for malformed CSV
+2. Advanced CSV operations:
+   - Add import from common password manager formats
+   - Implement export functionality
+   - Create data validation and cleaning
+   - Write tests for CSV operations
 
-2. Add tests:
-   - Test with valid Chrome export
-   - Test with malformed data
-   - Test with missing fields
-   - Test round-trip import/export
+### Phase 4: Command Line Interface (Days 7-8)
 
-### 5. CLI Commands (Day 8-9)
-
-1. Create cli/commands.rs:
-   - Implement each command (Init, Add, Get, etc.)
-   - Add input validation
-   - Create help text
+1. Basic CLI operations:
+   - Implement argument parsing
+   - Add basic CRUD commands
+   - Create help documentation
    - Add error messages
 
-2. Create cli/prompt.rs:
+2. Advanced CLI features:
    - Implement secure password input
    - Add confirmation dialogs
-   - Create input validation
-   - Add error handling
-
-### 6. TUI Implementation (Day 10-14)
-
-1. Create cli/tui/app.rs:
-   - Implement app state management
-   - Add view transitions
    - Create search functionality
-   - Add error handling
+   - Add import/export commands
 
-2. Create cli/tui/ui.rs:
-   - Implement main layout
-   - Add password list view
-   - Create detail view
-   - Implement help screen
-   - Add status bar
+## File Format Specifications
 
-3. Create cli/tui/events.rs:
-   - Implement keyboard handling
-   - Add window resize handling
-   - Create event loop
-   - Add error handling
+### Vault File Format
+1. Header (16 bytes):
+   - Magic number (8 bytes)
+   - Version number (4 bytes)
+   - Reserved (4 bytes)
 
-### 7. Main Application (Day 15)
+2. Encryption Metadata (48 bytes):
+   - Salt (32 bytes)
+   - IV (16 bytes)
 
-1. Create main.rs:
-   - Add command-line argument parsing
-   - Implement config initialization
-   - Create error handling
-   - Add logging
+3. Encrypted Data Block:
+   - Serialized JSON containing all entries
+   - Single encryption for entire data block
 
-## Implementation Details
-
-### Main Entry Point (main.rs)
-
-The main file should:
-- Parse command line arguments (CLI mode vs TUI mode)
-- Initialize logging
-- Set up error handling
-- Create platform-specific handlers
-- Initialize the vault
-- Start either CLI command processing or TUI
-
-### Encryption Layer (crypto/encryption.rs)
-
-Should implement:
-- Key derivation with Argon2 (memory: 64MB, iterations: 3, parallelism: 4)
-- AES-256-GCM for encryption
-- Secure random number generation for salts
-- Authenticated encryption for all data
-
-### Storage Format (storage/file.rs)
-
-Vault file format:
-- Header: Magic bytes + version
-- Salt: 32 bytes
-- Encrypted content:
-  - JSON-serialized vector of entries
-  - Each entry individually encrypted
-  - Authentication tag per entry
-
-### CSV Format (storage/csv.rs)
-
+### CSV Format
 Required fields:
-- name (website/application)
-- url
+- name
 - username
 - password
+- url
+
 Optional fields:
 - notes
-- created
-- modified
-
-### Platform-Specific Details
-
-Unix implementation:
-- File permissions: 0600
-- Directory permissions: 0700
-- Default location: ~/.config/password_manager/
-- Lock file handling
-
-Windows implementation:
-- File attributes: Hidden
-- Default location: %APPDATA%\password_manager\
-- Lock file handling
-
-### TUI Layout
-
-Main screen layout:
-```
-+-------------------------+
-|  Password List    | Detail View  |
-|  [Search Bar]     |             |
-|  - Entry 1        | URL:        |
-|  - Entry 2        | Username:   |
-|  - Entry 3        | Password:   |
-|                   | Notes:      |
-+-----------------------------------+
-| Status Bar  | Help: F1 | Exit: F10|
-+-----------------------------------+
-```
-
-## Error Handling
-
-Implement custom error types for:
-- Crypto operations
-- File operations
-- CSV parsing
-- User input
-- Platform-specific operations
-
-Each error should:
-- Include context
-- Be user-friendly
-- Support error chaining
-- Include file/line information in debug mode
+- created_at
+- modified_at
 
 ## Testing Strategy
 
-1. Unit tests for:
-   - Encryption/decryption
-   - Password entry validation
-   - CSV parsing
+### 1. Unit Tests
+- Entry validation
+- Encryption/decryption
+- File operations
+- CSV parsing
+
+### 2. Integration Tests
+- Full vault operations
+- Import/export functionality
+- Command line operations
+
+### 3. Error Cases
+- Invalid passwords
+- Corrupted files
+- Malformed CSV
+- Permission issues
+
+## Security Considerations
+
+1. Master Password:
+   - Minimum length enforcement
+   - Complexity requirements
+   - Secure input handling
+
+2. File Security:
+   - Secure file permissions
+   - Temporary file handling
+   - Backup file protection
+
+3. Memory Security:
+   - Secure password handling
+   - Memory wiping
+   - Buffer security
+
+## Error Handling Strategy
+
+1. Custom error types for:
    - File operations
+   - Encryption operations
+   - CSV operations
+   - Validation errors
 
-2. Integration tests for:
-   - Full vault operations
-   - Import/export
-   - Platform-specific features
+2. Error context:
+   - Descriptive messages
+   - Error chain support
+   - Recovery suggestions
 
-3. End-to-end tests for:
-   - CLI commands
-   - TUI operations
-   - Error scenarios
+## Future Expansion Considerations
 
+1. TUI Implementation:
+   - Separation of concerns for future TUI
+   - Abstracted data operations
+   - Event handling preparation
 
-## File Structure with Contents
-
-```rust
-src/
-├── main.rs                # Application entry
-│   fn main() {
-│       // Parse command line args
-│       // Initialize app state
-│       // Start TUI or handle CLI commands
-│       // Setup error handling
-│   }
-│
-├── models/
-│   ├── mod.rs            # Export models
-│   │   pub mod entry;
-│   │   pub use entry::PasswordEntry;
-│   │
-│   └── entry.rs          # Core data structures
-│       pub struct PasswordEntry {
-│           url: String,
-│           username: String,
-│           password: Vec<u8>,  // Encrypted
-│           notes: Option<String>,
-│           created_at: DateTime<Utc>,
-│           modified_at: DateTime<Utc>
-│       }
-│       
-│       impl PasswordEntry {
-│           fn new() -> Self
-│           fn validate(&self) -> Result<()>
-│           fn update_password(&mut self, new_pass: &[u8])
-│           fn to_csv_record(&self) -> Record
-│           fn from_csv_record(record: Record) -> Result<Self>
-│       }
-│
-├── crypto/
-│   ├── mod.rs            # Export crypto
-│   │   pub mod encryption;
-│   │   pub use encryption::*;
-│   │
-│   └── encryption.rs     # Encryption operations
-│       fn derive_key(password: &str, salt: &[u8]) -> Vec<u8>
-│       fn encrypt_password(password: &[u8], key: &[u8]) -> Result<Vec<u8>>
-│       fn decrypt_password(encrypted: &[u8], key: &[u8]) -> Result<Vec<u8>>
-│       fn generate_salt() -> [u8; 32]
-│
-├── storage/
-│   ├── mod.rs            # Export storage
-│   │   pub mod file;
-│   │   pub mod csv;
-│   │   pub use file::VaultStorage;
-│   │
-│   ├── file.rs           # File operations
-│   │   pub struct VaultStorage {
-│   │       path: PathBuf,
-│   │       master_key: Vec<u8>,
-│   │   }
-│   │
-│   │   impl VaultStorage {
-│   │       fn new(path: PathBuf, master_key: Vec<u8>) -> Self
-│   │       fn read_vault(&self) -> Result<Vec<PasswordEntry>>
-│   │       fn write_vault(&self, entries: &[PasswordEntry]) -> Result<()>
-│   │       fn backup_vault(&self) -> Result<()>
-│   │   }
-│   │
-│   └── csv.rs            # CSV handling
-│       fn import_entries(path: &Path) -> Result<Vec<PasswordEntry>>
-│       fn export_entries(entries: &[PasswordEntry], path: &Path) -> Result<()>
-│       fn validate_csv_headers(headers: &[String]) -> Result<()>
-│
-├── platform/
-│   ├── mod.rs            # Platform traits
-│   │   pub trait PlatformOperations {
-│   │       fn get_config_path() -> PathBuf;
-│   │       fn create_secure_file(path: &Path) -> Result<()>;
-│   │       fn read_secure_file(path: &Path) -> Result<Vec<u8>>;
-│   │       fn write_secure_file(path: &Path, data: &[u8]) -> Result<()>;
-│   │   }
-│   │
-│   ├── unix.rs           # Unix implementation
-│   │   pub struct UnixOperations;
-│   │   
-│   │   impl PlatformOperations for UnixOperations {
-│   │       fn get_config_path() -> PathBuf { "~/.config/password_manager" }
-│   │       // Other implementations
-│   │   }
-│   │
-│   └── windows.rs        # Windows implementation
-│       pub struct WindowsOperations;
-│       
-│       impl PlatformOperations for WindowsOperations {
-│           fn get_config_path() -> PathBuf { "%APPDATA%\password_manager" }
-│           // Other implementations
-│       }
-│
-└── cli/
-    ├── mod.rs            # Export CLI/TUI
-    │   pub mod commands;
-    │   pub mod prompt;
-    │   pub mod tui;
-    │
-    ├── commands.rs       # Command implementations
-    │   pub enum Command {
-    │       Init,
-    │       Add,
-    │       Get(String),
-    │       List,
-    │       Edit(String),
-    │       Delete(String),
-    │       Import(PathBuf),
-    │       Export(PathBuf),
-    │       ChangeMaster,
-    │   }
-    │
-    │   impl Command {
-    │       fn execute(&self, vault: &mut VaultStorage) -> Result<()>
-    │   }
-    │
-    ├── prompt.rs         # User input
-    │   fn read_password() -> Result<String>
-    │   fn confirm_action(msg: &str) -> bool
-    │   fn get_input(prompt: &str) -> Result<String>
-    │
-    └── tui/              # TUI components
-        ├── mod.rs        # Export TUI
-        │   pub mod app;
-        │   pub mod ui;
-        │   pub mod events;
-        │
-        ├── app.rs        # App state
-        │   pub struct App {
-        │       entries: Vec<PasswordEntry>,
-        │       current_view: View,
-        │       selected_index: Option<usize>,
-        │       search_term: String,
-        │       error_message: Option<String>,
-        │   }
-        │
-        │   impl App {
-        │       fn new() -> Self
-        │       fn handle_input(&mut self, key: Key) -> Result<()>
-        │       fn search(&mut self, term: &str)
-        │       fn select_entry(&mut self, index: usize)
-        │   }
-        │
-        ├── ui.rs         # UI rendering
-        │   fn draw(app: &App, frame: &mut Frame)
-        │   fn draw_list(entries: &[PasswordEntry], frame: &mut Frame)
-        │   fn draw_detail(entry: &PasswordEntry, frame: &mut Frame)
-        │   fn draw_help(frame: &mut Frame)
-        │   fn draw_status_bar(app: &App, frame: &mut Frame)
-        │
-        └── events.rs     # Event handling
-            fn handle_events(app: &mut App) -> Result<()>
-            fn handle_keyboard(app: &mut App, key: Key) -> Result<()>
-            fn handle_resize(app: &mut App, width: u16, height: u16)
-```
+2. Additional Features:
+   - Password generation
+   - Password strength analysis
+   - Category management
+   - Tags and metadata
