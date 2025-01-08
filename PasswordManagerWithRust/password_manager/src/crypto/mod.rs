@@ -1,2 +1,2 @@
-pub mod crypto;
-pub use crypto::FileCrypto;
+pub mod encryption;
+pub use encryption::FileCrypto;
