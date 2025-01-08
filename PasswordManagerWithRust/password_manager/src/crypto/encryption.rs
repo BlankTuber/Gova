@@ -11,7 +11,7 @@ pub struct FileCrypto {
 
 impl FileCrypto {
     pub fn new(master_password: &str) -> Self {
-        let mut hasher = Sha256::new();
+        let mut hasher = Sha256::default();
         hasher.update(master_password.as_bytes());
         let key = hasher.finalize();
         
@@ -40,6 +40,6 @@ impl FileCrypto {
         
         let (nonce, encrypted) = combined.split_at(12);
         
-        self.cipher.decrypt(Nonce::from_slice(nonce), encrypted).map_err(|_| "Decryption failed")
+        self.cipher.decrypt(Nonce::from_slice(nonce), encrypted).map_err(|_| "Decryption failed: Incorrect master password or corrupted data")
     }
 }

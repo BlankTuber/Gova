@@ -25,19 +25,18 @@ impl FileStorage {
         }
         Ok(())
     }
-
+    
     pub fn save_entries(&self, entries: &[PasswordEntry]) -> Result<(), &'static str> {
         let mut content = String::new();
         for entry in entries {
-            let encrypted_username = self.crypto.encrypt_to_string(entry.username().as_bytes())?;
-            let encrypted_password = self.crypto.encrypt_to_string(entry.password().as_bytes())?;
-            let encrypted_place = self.crypto.encrypt_to_string(entry.place().as_bytes())?;
-            content.push_str(&format!(
-                "{}\t{}\t{}\n",
-                encrypted_username,
-                encrypted_password,
-                encrypted_place
-            ));
+            let combined_entry = format!(
+                "{}\t{}\t{}",
+                entry.username(),
+                entry.password(),
+                entry.place()
+            );
+            let encrypted_entry = self.crypto.encrypt_to_string(combined_entry.as_bytes())?;
+            content.push_str(&format!("{}\n", encrypted_entry));
         }
         
         fs::write(&self.file_path, content).map_err(|_| "Failed to write file")?;
@@ -57,19 +56,17 @@ impl FileStorage {
 
         let mut entries = Vec::new();
         for line in content.lines() {
-            let parts: Vec<&str> = line.split('\t').collect();
+            let decrypted_entry = self.crypto.decrypt_from_string(line)?;
+            let decrypted_string = String::from_utf8(decrypted_entry).map_err(|_| "Invalid UTF-8")?;
+            let parts: Vec<&str> = decrypted_string.split('\t').collect();
             if parts.len() != 3 {
                 continue;
             }
 
-            let username = self.crypto.decrypt_from_string(parts[0])?;
-            let password = self.crypto.decrypt_from_string(parts[1])?;
-            let place = self.crypto.decrypt_from_string(parts[2])?;
-
             if let Ok(entry) = PasswordEntry::new(
-                String::from_utf8(username).map_err(|_| "Invalid UTF-8")?,
-                String::from_utf8(password).map_err(|_| "Invalid UTF-8")?,
-                String::from_utf8(place).map_err(|_| "Invalid UTF-8")?,
+                parts[0].to_string(),
+                parts[1].to_string(),
+                parts[2].to_string(),
             ) {
                 entries.push(entry);
             }

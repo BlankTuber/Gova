@@ -1,5 +1,5 @@
 use std::io::{self, Write};
-use std::process;
+use std::process::{self};
 
 mod crypto;
 mod models;
@@ -182,19 +182,27 @@ fn export_csv(entries: &[PasswordEntry]) -> Result<(), &'static str> {
 }
 
 fn main() {
+    while run() {};
+}
+
+fn run() -> bool{
     let master_password = get_master_password();
     let storage = FileStorage::new(PASSWORD_FILE.to_string(), &master_password);
 
     if let Err(e) = storage.initialize() {
         eprintln!("Failed to initialize storage: {}", e);
-        process::exit(1);
+        return false;
     }
 
     let mut entries = match storage.load_entries() {
         Ok(e) => e,
+        Err("Decryption failed: Incorrect master password or corrupted data") => {
+            eprintln!("Decryption failed: Incorrect master password or corrupted data");
+            return true;
+        }
         Err(e) => {
             eprintln!("Failed to load entries: {}", e);
-            process::exit(1);
+            return false;
         }
     };
 
@@ -221,7 +229,7 @@ fn main() {
             },
             "7" => {
                 println!("Goodbye!");
-                break;
+                process::exit(0);
             },
             _ => println!("Invalid choice, please try again."),
         }
