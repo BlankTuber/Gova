@@ -6,7 +6,7 @@ mod models;
 mod storage;
 
 use models::PasswordEntry;
-use storage::FileStorage;
+use storage::{FileStorage, CsvStorage};
 
 const PASSWORD_FILE: &str = "passwords.enc";
 
@@ -17,16 +17,6 @@ fn get_master_password() -> String {
     let mut password = String::new();
     io::stdin().read_line(&mut password).unwrap();
     password.trim().to_string()
-}
-
-fn print_menu() {
-    println!("\nPassword Manager Menu:");
-    println!("1. Add new password");
-    println!("2. List all passwords");
-    println!("3. Search passwords");
-    println!("4. Exit");
-    print!("\nChoice: ");
-    io::stdout().flush().unwrap();
 }
 
 fn add_password(storage: &FileStorage, entries: &mut Vec<PasswordEntry>) -> Result<(), &'static str> {
@@ -57,6 +47,19 @@ fn add_password(storage: &FileStorage, entries: &mut Vec<PasswordEntry>) -> Resu
     Ok(())
 }
 
+fn print_menu() {
+    println!("\nPassword Manager Menu:");
+    println!("1. Add new password");
+    println!("2. List all passwords");
+    println!("3. Search passwords");
+    println!("4. Edit password");
+    println!("5. Import from CSV");
+    println!("6. Export to CSV");
+    println!("7. Exit");
+    print!("\nChoice: ");
+    io::stdout().flush().unwrap();
+}
+
 fn list_passwords(entries: &[PasswordEntry]) {
     if entries.is_empty() {
         println!("No passwords stored.");
@@ -64,12 +67,13 @@ fn list_passwords(entries: &[PasswordEntry]) {
     }
 
     println!("\nStored Passwords:");
-    println!("{:<20} {:<20} {:<20}", "Username", "Password", "Place");
-    println!("{}", "-".repeat(60));
+    println!("{:<4} {:<20} {:<20} {:<20}", "#", "Username", "Password", "Place");
+    println!("{}", "-".repeat(64));
 
-    for entry in entries {
+    for (i, entry) in entries.iter().enumerate() {
         println!(
-            "{:<20} {:<20} {:<20}",
+            "{:<4} {:<20} {:<20} {:<20}",
+            i + 1,
             entry.username(),
             entry.password(),
             entry.place()
@@ -111,6 +115,72 @@ fn search_passwords(entries: &[PasswordEntry]) {
     }
 }
 
+fn edit_password(storage: &FileStorage, entries: &mut Vec<PasswordEntry>) -> Result<(), &'static str> {
+    list_passwords(entries);
+    
+    print!("Enter index to edit (0 to cancel): ");
+    io::stdout().flush().unwrap();
+    let mut index_str = String::new();
+    io::stdin().read_line(&mut index_str).unwrap();
+    
+    let index: usize = match index_str.trim().parse::<usize>() {
+        Ok(i) if i == 0 => return Ok(()),
+        Ok(i) if i <= entries.len() => i - 1,
+        _ => return Err("Invalid index"),
+    };
+
+    print!("New username (press Enter to skip): ");
+    io::stdout().flush().unwrap();
+    let mut username = String::new();
+    io::stdin().read_line(&mut username).unwrap();
+    let username = if username.trim().is_empty() { None } else { Some(username) };
+
+    print!("New password (press Enter to skip): ");
+    io::stdout().flush().unwrap();
+    let mut password = String::new();
+    io::stdin().read_line(&mut password).unwrap();
+    let password = if password.trim().is_empty() { None } else { Some(password) };
+
+    print!("New place (press Enter to skip): ");
+    io::stdout().flush().unwrap();
+    let mut place = String::new();
+    io::stdin().read_line(&mut place).unwrap();
+    let place = if place.trim().is_empty() { None } else { Some(place) };
+
+    entries[index].update(username, password, place)?;
+    storage.save_entries(entries)?;
+    println!("Password updated successfully!");
+    Ok(())
+}
+
+fn import_csv(storage: &FileStorage, entries: &mut Vec<PasswordEntry>) -> Result<(), &'static str> {
+    print!("Enter CSV file path: ");
+    io::stdout().flush().unwrap();
+    let mut path = String::new();
+    io::stdin().read_line(&mut path).unwrap();
+    
+    let imported = CsvStorage::import(path.trim())
+        .map_err(|_| "Failed to import CSV")?;
+    
+    entries.extend(imported);
+    storage.save_entries(entries)?;
+    println!("Passwords imported successfully!");
+    Ok(())
+}
+
+fn export_csv(entries: &[PasswordEntry]) -> Result<(), &'static str> {
+    print!("Enter CSV file path: ");
+    io::stdout().flush().unwrap();
+    let mut path = String::new();
+    io::stdin().read_line(&mut path).unwrap();
+    
+    CsvStorage::export(path.trim(), entries)
+        .map_err(|_| "Failed to export CSV")?;
+    
+    println!("Passwords exported successfully!");
+    Ok(())
+}
+
 fn main() {
     let master_password = get_master_password();
     let storage = FileStorage::new(PASSWORD_FILE.to_string(), &master_password);
@@ -135,17 +205,24 @@ fn main() {
         io::stdin().read_line(&mut choice).unwrap();
 
         match choice.trim() {
-            "1" => {
-                if let Err(e) = add_password(&storage, &mut entries) {
-                    eprintln!("Error adding password: {}", e);
-                }
-            }
+            "1" => if let Err(e) = add_password(&storage, &mut entries) {
+                eprintln!("Error adding password: {}", e);
+            },
             "2" => list_passwords(&entries),
             "3" => search_passwords(&entries),
-            "4" => {
+            "4" => if let Err(e) = edit_password(&storage, &mut entries) {
+                eprintln!("Error editing password: {}", e);
+            },
+            "5" => if let Err(e) = import_csv(&storage, &mut entries) {
+                eprintln!("Error importing CSV: {}", e);
+            },
+            "6" => if let Err(e) = export_csv(&entries) {
+                eprintln!("Error exporting CSV: {}", e);
+            },
+            "7" => {
                 println!("Goodbye!");
                 break;
-            }
+            },
             _ => println!("Invalid choice, please try again."),
         }
     }
