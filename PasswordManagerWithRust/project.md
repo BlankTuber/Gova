@@ -1,12 +1,14 @@
 # Simplified Password Manager Implementation Guide
 
 ## Core Dependencies
+
 - csv: For import/export functionality
 - chrono: For timestamp handling
 - rust_crypto: For encryption operations
 
 ## Project Structure
-```
+
+```md
 src/
 ├── main.rs              # Application entry point
 ├── models/
@@ -87,6 +89,7 @@ src/
 ## File Format Specifications
 
 ### Vault File Format
+
 1. Header (16 bytes):
    - Magic number (8 bytes)
    - Version number (4 bytes)
@@ -101,13 +104,16 @@ src/
    - Single encryption for entire data block
 
 ### CSV Format
+
 Required fields:
+
 - name
 - username
 - password
 - url
 
 Optional fields:
+
 - notes
 - created_at
 - modified_at
@@ -115,17 +121,20 @@ Optional fields:
 ## Testing Strategy
 
 ### 1. Unit Tests
+
 - Entry validation
 - Encryption/decryption
 - File operations
 - CSV parsing
 
 ### 2. Integration Tests
+
 - Full vault operations
 - Import/export functionality
 - Command line operations
 
 ### 3. Error Cases
+
 - Invalid passwords
 - Corrupted files
 - Malformed CSV
