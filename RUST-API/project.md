@@ -1,14 +1,13 @@
-# Central User Space - Complete Project Overview
+# Simplified Central User Space - Project Overview
 
 ## Technology Stack (2024)
 
-```rust
+```md
 Core:
 - Rust 1.75+
 - Axum 0.7 (web framework)
 - Tokio 1.0 (async runtime)
 - PostgreSQL 16 with SQLx 0.7
-- Redis 7
 
 Auth & Security:
 - jsonwebtoken 9.0
@@ -26,12 +25,11 @@ Development & Testing:
 - tracing (logging)
 - mockall (mocking)
 - tokio-test
-- testcontainers-rs
 ```
 
 ## Project Structure
 
-```rust
+```md
 .
 ├── Cargo.toml
 ├── Dockerfile
@@ -43,7 +41,7 @@ Development & Testing:
     ├── main.rs
     ├── api/                    # API Layer
     │   ├── middleware/        
-    │   │   ├── auth.rs
+    │   │   ├── auth.rs        # JWT validation
     │   │   ├── rate_limit.rs
     │   │   └── logging.rs
     │   ├── routes/
@@ -58,15 +56,14 @@ Development & Testing:
     │   ├── auth/
     │   │   ├── service.rs
     │   │   ├── models.rs
-    │   │   └── errors.rs
+    │   │   └── jwt.rs         # JWT handling
     │   ├── users/
     │   │   ├── service.rs
     │   │   ├── models.rs
     │   │   └── validation.rs
     │   └── security/
     │       ├── encryption.rs
-    │       ├── password.rs
-    │       └── tokens.rs
+    │       └── password.rs
     ├── db/                     # Data Layer
     │   ├── migrations/
     │   ├── repositories/
@@ -90,19 +87,22 @@ Development & Testing:
 
 ```md
 JWT Configuration:
-- Short lived access tokens (15min)
-- Longer lived refresh tokens (7 days)
-- Rotation on every use
+- Access tokens (15min lifetime)
+- Refresh tokens (7 days lifetime)
 - JWK for signature verification
+- jti claim for token identification
 
-Password Security:
-- Argon2id with modern parameters
-- Breached password checking
-- Complex password requirements
-- Rate limiting on attempts
+Claims Structure:
+{
+    "sub": "user_id",
+    "jti": "unique_token_id",
+    "exp": expiration_time,
+    "iat": issued_at,
+    "scope": ["user", "admin", etc]
+}
 ```
 
-### User Data Model
+### Database Schema
 
 ```sql
 -- Core User Table
@@ -120,46 +120,42 @@ CREATE TABLE users (
     locked_until TIMESTAMPTZ
 );
 
--- Extended Profile (Optional)
+-- Optional Profile Extension
 CREATE TABLE user_profiles (
     user_id UUID PRIMARY KEY,
     -- extensible profile fields
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Security Settings
-CREATE TABLE user_security (
-    user_id UUID PRIMARY KEY,
-    mfa_enabled BOOLEAN,
-    mfa_secret TEXT,
-    backup_codes JSONB,
-    security_keys JSONB
+-- Token Revocation (for security incidents)
+CREATE TABLE revoked_tokens (
+    token_id TEXT PRIMARY KEY,    -- jti claim
+    revoked_at TIMESTAMPTZ,
+    reason TEXT
 );
 ```
 
 ### API Design (REST)
 
-```rust
+```md
 Base Path: /api/v1
 
 Authentication:
 POST    /auth/register
 POST    /auth/login
 POST    /auth/refresh
-DELETE  /auth/logout
+DELETE  /auth/logout      # Revokes specific token
 POST    /auth/password/reset
-POST    /auth/mfa/enable
 
 Users:
 GET     /users/me
 PATCH   /users/me
-GET     /users/me/sessions
-DELETE  /users/me/sessions/{id}
+DELETE  /users/me        # Account deletion
 
-Security:
-POST    /security/mfa/verify
-POST    /security/mfa/backup
-PATCH   /security/password
-GET     /security/audit-log
+Admin:
+GET     /admin/users
+POST    /admin/users/{id}/status
+GET     /admin/audit-log
 ```
 
 ### Security Implementation
@@ -168,18 +164,16 @@ GET     /security/audit-log
 
 1. TLS Termination
 2. Rate Limiting Check
-3. API Key Validation
-4. JWT Validation
-5. Permission Check
-6. Input Validation
-7. Handler Execution
-8. Response Sanitization
-9. Audit Logging
+3. JWT Validation
+4. Permission Check
+5. Input Validation
+6. Handler Execution
+7. Response Sanitization
+8. Audit Logging
 
 #### Logging Strategy
 
 ```rust
-// Structured Logging Fields
 {
     "timestamp": "",
     "trace_id": "",
@@ -195,7 +189,6 @@ GET     /security/audit-log
 ### Error Handling
 
 ```rust
-// Unified Error Response
 {
     "error": {
         "code": "string",
@@ -211,7 +204,7 @@ GET     /security/audit-log
 ### Local Development
 
 ```bash
-# Start infrastructure
+# Start PostgreSQL
 docker-compose up -d
 
 # Run migrations
@@ -237,14 +230,6 @@ sqlx migrate run
 sqlx migrate revert
 ```
 
-### Testing Strategy
-
-1. Unit Tests per Module
-2. Integration Tests for APIs
-3. Property-Based Testing
-4. Security Testing
-5. Performance Benchmarks
-
 ## Production Considerations
 
 ### Deployment
@@ -257,8 +242,7 @@ sqlx migrate revert
 
 ### Scaling Strategy
 
-- Stateless design
-- Redis for session store
+- Stateless design (JWT)
 - Database connection pooling
 - Rate limiting per instance
 - Load balancer ready
