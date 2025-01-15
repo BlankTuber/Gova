@@ -30,7 +30,6 @@ Development & Testing:
 ## Project Structure
 
 ```md
-.
 ├── Cargo.toml
 ├── Dockerfile
 ├── docker-compose.yml
