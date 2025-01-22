@@ -2,12 +2,13 @@
 
 mod db;
 mod routes;
+mod models;
+mod services;
 
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
 }
-
 
 #[launch]
 async fn rocket() -> _ {
