@@ -12,16 +12,21 @@ fn index() -> &'static str {
 
 #[launch]
 async fn rocket() -> _ {
-    // Use .expect() or proper error propagation
+    // Initialize MongoConnection
     let mongo_conn = db::mongo::MongoConnection::new(
         "mongodb://localhost:27017", 
         "user-space-api"
     ).await.expect("Failed to connect to MongoDB");
 
-    // Properly await the ping and handle potential errors
+    // Ping MongoDB to ensure connectivity
     mongo_conn.ping().await.expect("MongoDB ping failed");
 
+    // Create an instance of AuthService using the database from MongoConnection
+    let auth_service = services::auth::AuthService::new(mongo_conn.database.clone());
+
+    // Build the Rocket instance
     rocket::build()
         .manage(mongo_conn)
-        .mount("/", routes![index, routes::user::get_user])
+        .manage(auth_service)
+        .mount("/", routes![index, routes::user::create_user, routes::user::get_user])
 }

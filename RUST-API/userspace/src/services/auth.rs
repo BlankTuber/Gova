@@ -3,24 +3,20 @@ use mongodb::bson::doc;
 
 use crate::models::user::{User, UserRole, UserStatus};
 
-use uuid::Uuid;
-
 pub struct AuthService {
-    user_collection: Collection<User>,
-    db: Database
+    user_collection: Collection<User>
 }
 
 impl AuthService {
     pub fn new(db: Database) -> Self {
         AuthService {
-            user_collection: db.collection("users"),
-            db,
+            user_collection: db.collection("users")
         }
     }
 
-    pub async fn create_user(&self, username: String, email: String) -> Result<Uuid, mongodb::error::Error> {
-        let user = User {
-            id: Uuid::new_v4(),
+    pub async fn create_user(&self, username: String, email: String) -> Result<User, mongodb::error::Error> {
+        let mut user = User {
+            id: None,
             username,
             email,
             role: UserRole::User,
@@ -43,10 +39,18 @@ impl AuthService {
             )));
         }
 
-        self.user_collection
-        .insert_one(&user)
-        .await?;
+        let result = self.user_collection
+            .insert_one(&user)
+            .await?;
 
-        Ok(user.id)
+        user.id = Some(result.inserted_id.as_object_id().unwrap().to_hex()); 
+
+        Ok(user) //sends user info but not the mongodb entry
+    }
+
+    pub async fn get_user_by_id(&self, id: mongodb::bson::oid::ObjectId) -> Result<Option<User>, mongodb::error::Error> {
+        let filter = doc! {"_id": id};
+        let user = self.user_collection.find_one(filter).await?;
+        Ok(user)
     }
 }

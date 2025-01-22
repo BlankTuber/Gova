@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
-    pub id: Uuid,
+    pub id: Option<String>,
     pub username: String,
     pub email: String,
 
@@ -34,18 +33,4 @@ pub struct Profile {
     pub last_name: Option<String>,
     pub avatar_url: Option<String>,
     pub bio: Option<String>,
-}
-
-
-impl User {
-    pub fn new(username: String, email: String) -> Self {
-        User {
-            id: Uuid::new_v4(),
-            username,
-            email,
-            role: UserRole::User,
-            status: UserStatus::Active,
-            profile: None
-        }
-    }
 }
