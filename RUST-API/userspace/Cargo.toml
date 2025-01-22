@@ -4,4 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+mongodb = "3.2.0"
 rocket = "0.5.1"
+rocket_contrib = "0.4.11"
+serde = "1.0.217"
+tokio = "1.43.0"
