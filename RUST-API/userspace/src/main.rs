@@ -1,14 +1,11 @@
-use axum::{
-    routing::get,
-    Router,
-};
+#[macro_use] extern crate rocket;
 
-#[tokio::main]
-async fn main() {
-    // build our application with a single route
-    let app = Router::new().route("/", get(|| async { "Hello, World!" }));
+#[get("/")]
+fn hello_world() -> &'static str {
+    "Hello world!"
+}
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("localhost:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+#[launch]
+fn rocket() -> _ {
+    rocket::build().mount("/", routes![hello_world])
 }
