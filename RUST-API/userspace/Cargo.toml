@@ -8,7 +8,7 @@ dotenv = "0.15.0"
 jsonwebtoken = "9.3.0"
 lettre = "0.11.11"
 mongodb = "3.2.0"
-rocket = "0.5.1"
+rocket = { version = "0.5.1", features = ["json"] }
 serde = { version = "1.0.217", features = ["derive"] }
 tokio = { version = "1.43.0", features = ["full"] }
 uuid = "1.12.1"

@@ -35,3 +35,17 @@ pub struct Profile {
     pub avatar_url: Option<String>,
     pub bio: Option<String>,
 }
+
+
+impl User {
+    pub fn new(username: String, email: String) -> Self {
+        User {
+            id: Uuid::new_v4(),
+            username,
+            email,
+            role: UserRole::User,
+            status: UserStatus::Active,
+            profile: None
+        }
+    }
+}
