@@ -4,6 +4,8 @@ use mongodb::bson::doc;
 
 #[macro_use] extern crate rocket;
 
+mod routes;
+
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world!"
@@ -28,5 +30,5 @@ async fn rocket() -> _ {
     };
     rocket::build()
         .manage(client)  // Store client in Rocket's managed state
-        .mount("/", routes![index])
+        .mount("/", routes![index, routes::user::get_user])
 }
