@@ -50,7 +50,12 @@ impl AuthService {
 
     pub async fn get_user_by_id(&self, id: mongodb::bson::oid::ObjectId) -> Result<Option<User>, mongodb::error::Error> {
         let filter = doc! {"_id": id};
-        let user = self.user_collection.find_one(filter).await?;
+        let mut user = self.user_collection.find_one(filter).await?;
+        
+        if let Some(ref mut u) = user {
+            u.id = Some(id.to_string());
+        }
+        
         Ok(user)
     }
 }
