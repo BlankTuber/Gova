@@ -28,5 +28,5 @@ async fn rocket() -> _ {
     rocket::build()
         .manage(mongo_conn)
         .manage(auth_service)
-        .mount("/", routes![index, routes::user::create_user, routes::user::get_user])
+        .mount("/", routes![index, routes::user::get_user, routes::user::create_user, routes::user::update_user])
 }

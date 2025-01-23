@@ -1,5 +1,5 @@
 use mongodb::{Collection, Database};
-use mongodb::bson::doc;
+use mongodb::bson::{doc, Document};
 
 use crate::models::user::{User, UserRole, UserStatus};
 
@@ -56,6 +56,35 @@ impl AuthService {
             u.id = Some(id.to_string());
         }
         
+        Ok(user)
+    }
+
+    fn filter_sensitive_fields(mut doc: Document) -> Document {
+        let sensitive_fields = ["role", "status", "id", "_id", "profile"];
+        for field in sensitive_fields.iter() {
+            doc.remove(*field);
+        }
+        doc
+    }
+
+    pub async fn update_user_by_id(
+        &self,
+        id: mongodb::bson::oid::ObjectId,
+        update_data: Document
+    ) -> Result<Option<User>, mongodb::error::Error> {
+        let query = doc! {"_id": id};
+        
+        // Filter out sensitive fields
+        let filtered_update_data = AuthService::filter_sensitive_fields(update_data);
+        
+        let update = doc! {"$set": filtered_update_data};
+        
+        self.user_collection
+            .update_one(query, update)
+            .await?;
+    
+        let user = self.get_user_by_id(id).await?;
+    
         Ok(user)
     }
 }
