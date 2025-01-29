@@ -1,149 +1,226 @@
 # User API Project Plan
 
-## Roadmap
-
-### Phase 1: Initial Setup
-
-1. **Set up the project environment**:
-   - Initialize a new Rust project using `cargo`.
-   - Configure the `Cargo.toml` file with the listed dependencies.
-   - Set up `.env` for environment variables.
-2. **Database integration**:
-   - Choose a database (e.g., PostgreSQL, MySQL, etc.).
-   - Define the database schema for users (e.g., tables for users, roles, etc.).
-   - Connect to the database using `sqlx` and verify connectivity.
-   - Set up migrations using `sqlx migrate`.
-3. **Basic API structure**:
-   - Implement a basic Rocket server setup.
-   - Create a health check endpoint (e.g., `/health`).
-
-### Phase 2: Core Functionality
-
-1. **User Authentication**:
-   - Implement JWT-based authentication using `jsonwebtoken`.
-   - Add endpoints in the following order:
-     - **Register**: Create a new user and store hashed passwords.
-     - **Login**: Validate credentials and generate a JWT.
-     - **Get User**: Fetch user details using authentication middleware.
-   - Validate input using `validator`.
-2. **User Management**:
-   - Add endpoints for additional CRUD operations (e.g., update user, delete user).
-   - Ensure proper validation and error handling.
-3. **Email integration**:
-   - Configure `lettre` for sending emails (e.g., welcome email, password reset).
-   - Create email templates.
-
-### Phase 3: Security and Enhancements
-
-1. **Role-based Access Control (RBAC)**:
-   - Add roles and permissions for users.
-   - Restrict access to certain endpoints based on roles.
-2. **Input Validation and Sanitization**:
-   - Use `validator` to ensure data integrity.
-   - Sanitize all user inputs to prevent injection attacks.
-3. **Middleware**:
-   - Implement middleware for authentication (JWT validation).
-   - Create reusable middleware for logging and request validation.
-
-### Phase 4: Optimization and Documentation
-
-1. **Code Optimization**:
-    - Refactor code for better modularity and readability.
-    - Use Postman or a similar tool for manual API testing.
-2. **Documentation**:
-    - Document the API endpoints and expected input/output.
-    - Add comments to the codebase for maintainability.
-3. **Deployment**:
-    - Deploy the API locally, ensuring proper configuration for the environment.
-
----
-
 ## Project / Folder Structure
 
 ```md
 userspace/
 ├── src/
-│   ├── main.rs         # Entry point of the application
-│   ├── lib.rs          # Main library file (optional if organizing modules)
+│   ├── main.rs         # Single entry point of the application
 │   ├── config/         # Configuration-related code
-│   │   ├── mod.rs      # Module file
-│   │   └── database.rs # Database connection setup
-│   ├── routes/         # API route handlers
-│   │   ├── mod.rs      # Module file
-│   │   ├── auth/       # Authentication routes
-│   │   │   ├── mod.rs  # Module file
-│   │   │   ├── register.rs # Register route
-│   │   │   ├── login.rs    # Login route
-│   │   │   └── get_user.rs # Get user route
-│   │   └── users/      # User management routes
-│   │       ├── mod.rs  # Module file
-│   │       ├── create.rs  # Create user
-│   │       ├── update.rs  # Update user
-│   │       ├── delete.rs  # Delete user
-│   │       └── get_all.rs # Get all users
-│   ├── controllers/    # Business logic and services
-│   │   ├── mod.rs      # Module file
-│   │   ├── auth/       # Authentication controllers
-│   │   │   ├── mod.rs  # Module file
-│   │   │   ├── register.rs # Register controller
-│   │   │   ├── login.rs    # Login controller
-│   │   │   └── get_user.rs # Get user controller
-│   │   └── users/      # User management controllers
-│   │       ├── mod.rs  # Module file
-│   │       ├── create.rs  # Create user logic
-│   │       ├── update.rs  # Update user logic
-│   │       ├── delete.rs  # Delete user logic
-│   │       └── get_all.rs # Get all users logic
-│   ├── models/         # Data models
-│   │   ├── mod.rs      # Module file
-│   │   └── user.rs     # User model
-│   ├── utils/          # Utility functions and helpers
-│   │   ├── mod.rs      # Module file
-│   │   ├── validation.rs # Validation functions
-│   │   └── security.rs # Security helpers (e.g., hashing, sanitization)
-│   ├── middleware/     # Middleware components
-│   │   ├── mod.rs      # Module file
-│   │   ├── auth.rs     # JWT authentication middleware
-│   │   └── logging.rs  # Logging middleware
-├── migrations/         # SQL migration files for database schema
-├── tests/              # Integration tests (optional)
-├── .env                # Environment variables
-├── Cargo.toml          # Rust project configuration
-├── README.md           # Project overview and documentation
+│   │   ├── mod.rs          # Module file re-exporting anything in config/
+│   │   └── database.rs     # Database connection setup (pool init, etc.)
+│   ├── routes/         # API route handlers (thin, handle HTTP specifics)
+│   │   ├── mod.rs          # Module file re-exporting routes
+│   │   ├── auth/           # Authentication routes
+│   │   │   ├── mod.rs          # Module file
+│   │   │   ├── register.rs     # Register route
+│   │   │   ├── login.rs        # Login route
+│   │   │   └── get_user.rs     # Get user route
+│   │   └── users/          # User management routes
+│   │       ├── mod.rs          # Module file
+│   │       ├── update.rs       # Update user route
+│   │       ├── delete.rs       # Delete user route
+│   ├── controllers/        # Business logic and services (the "meat" of the app)
+│   │   ├── mod.rs              # Module file re-exporting controllers
+│   │   ├── auth/               # Authentication controllers
+│   │   │   ├── mod.rs              # Module file
+│   │   │   ├── register.rs         # Register logic
+│   │   │   ├── login.rs            # Login logic
+│   │   │   └── get_user.rs         # Get user logic
+│   │   └── users/              # User management controllers
+│   │       ├── mod.rs              # Module file
+│   │       ├── update.rs           # Update user logic
+│   │       ├── delete.rs           # Delete user logic
+│   ├── models/                 # Data models
+│   │   ├── mod.rs                  # Module file re-exporting model files
+│   │   ├── schema.rs              # Diesel's schema definitions (auto-generated or manually created)
+│   │   └── user.rs                # User model (e.g. structs, Diesel annotations)
+│   ├── utils/                  # Utility functions and helpers
+│   │   ├── mod.rs                  # Module file re-exporting utils
+│   │   ├── validation.rs           # Validation functions (e.g. using validator crate)
+│   │   └── createJWT.rs             # JWT generation
+│   │   └── hashing.rs             # Hashing
+│   │   └── security.rs             # Security helpers
+│   ├── middleware/             # Middleware components (e.g., Rocket fairings, guards)
+│   │   ├── mod.rs                  # Module file re-exporting middleware
+│   │   ├── auth.rs                 # JWT authentication guard/fairing
+│   │   └── logging.rs              # Logging or request tracing
+├── migrations/                 # Diesel migration files for database schema
+├── tests/                      # Integration tests (optional)
+├── .env                        # Environment variables (dev only)
+├── Cargo.toml                  # Rust project configuration
+└── README.md                   # Project overview and documentation
 ```
+
+## 1. **Configure the Database**
+
+1. **Install Diesel CLI** (if you haven’t already)  
+
+   ```bash
+      cargo install diesel_cli --no-default-features --features postgres
+   ```
+
+2. **Set up Diesel**  
+
+   ```bash
+      diesel setup
+   ```  
+
+   This command usually looks for `DATABASE_URL` in `.env` or the environment. Make sure you have `.env` with something like:  
+
+   ```md
+      DATABASE_URL=postgres://postgres:password@localhost:5432/mydb
+   ```  
+
+   Diesel will create a `diesel.toml` file and maybe set up initial migrations.
+
+3. **Create your first migration**  
+
+   ```bash
+      diesel migration generate create_users
+   ```  
+
+   Fills `/migrations/` with a timestamped folder containing `up.sql` and `down.sql`.  
+   - Fill in `up.sql`: e.g., `CREATE TABLE users (...)`.  
+   - Fill in `down.sql`: e.g., `DROP TABLE users;`.
+
+4. **Run the migration**  
+
+   ```bash
+      diesel migration run
+   ```  
+
+   This applies the SQL to your local database.
+
+5. **Generate `schema.rs`**  
+
+   ```bash
+      diesel print-schema > src/models/schema.rs
+   ```  
+
+   This file includes Diesel’s `table! { ... }` macros.  
+   - If you make schema changes later, re-run this command to keep `schema.rs` in sync.
 
 ---
 
-## Explanation of Key Components
+## 2. **Define Models**
 
-### Middleware
+1. **Create `user.rs`** in `models/`  
+   - Write your `#[derive(Queryable, Insertable)]` structs (`User`, `NewUser`, etc.).  
+   - Reference the `schema::users` table from `schema.rs`.  
+   - Optionally add `#[derive(Serialize, Deserialize)]` if you plan to convert to/from JSON.  
 
-- **Authentication Middleware**: Verifies JWT tokens and attaches user information to the request.
-- **Logging Middleware**: Logs incoming requests and their responses for debugging purposes.
+2. **Check everything compiles**  
+   - Run `cargo check`.  
+   - Fix any errors related to Diesel macros or missing references.
 
-### Security, Validation, and Sanitization
+---
 
-- **Security**:
-  - Use `bcrypt` or `argon2` for password hashing.
-  - Always sanitize user inputs to prevent SQL injection and XSS attacks.
-  - Enable HTTPS for secure communication.
-- **Validation**:
-  - Use `validator` to enforce input formats (e.g., email, password strength).
-  - Implement custom validation logic in `utils/validation.rs`.
-- **Sanitization**:
-  - Remove or escape harmful characters in inputs.
-  - Ensure database queries are parameterized.
+## 3. **Database Connection Setup**
 
-### Migrations
+1. **`config/database.rs`**  
+   - Write a function (e.g., `init_pool(database_url: &str)`) that uses Diesel’s `r2d2` connection pool.  
+   - Return a pool (e.g., `Pool<ConnectionManager<PgConnection>>`).  
 
-1. Use `sqlx migrate` to create and manage migrations:
-   - Run `sqlx migrate add <migration_name>` to create a new migration file.
-   - Write SQL scripts for creating or modifying tables in the migration file.
-   - Apply migrations with `sqlx migrate run`.
-2. Maintain version control over migration files to track schema changes.
+2. **Initialize the pool in `main.rs`**  
+   - Load environment variables (`dotenv::dotenv().ok();`).  
+   - Read `DATABASE_URL` from `std::env::var(...)`.  
+   - Call `init_pool(...)` to create the pool.  
+   - Pass it to Rocket with `.manage(pool)`.
 
-### Testing with Postman
+---
 
-- Use Postman to manually test API endpoints.
-- Create a Postman collection for organizing requests.
-- Use environment variables in Postman for dynamic testing (e.g., base URL, tokens).
+## 4. **Set Up Routes and Controllers**
+
+1. **Create Route Handlers** in `routes/`  
+   - For example, `routes/auth/register.rs` with a function like:
+
+     ```rust
+      #[post("/register", data = "<user_data>")]
+      pub fn register(user_data: Json<NewUser>, pool: &State<DbPool>) -> Result<Status, SomeError> {
+            // ... call controller logic ...
+      }
+     ```
+
+   - Keep them **thin**: parse requests, call controllers, return a response.
+
+2. **Create Business Logic** in `controllers/`  
+   - For example, `controllers/auth/register.rs` might have a function `register_user(...)` that does validations, hashing, inserting into the DB.  
+   - This function returns a result that your route layer can translate into an HTTP response.
+
+3. **Mount Routes** in `main.rs**  
+
+   ```rust
+      rocket::build()
+         .manage(pool)
+         .mount("/auth", routes![register, login])
+         .mount("/users", routes![update_user, delete_user]);
+   ```
+
+---
+
+## 5. **Utility Functions**
+
+1. **Validation** in `utils/validation.rs`  
+   - Functions or structs with `#[derive(Validate)]` from `validator` crate.  
+   - Possibly used by your controllers (e.g., `register_user`) to validate input.
+
+2. **Security** in `utils/security.rs` or multiple files  
+   - `createJWT.rs` for generating JWT tokens (using `jsonwebtoken`).  
+   - `hashing.rs` for hashing passwords (using `argon2` or `bcrypt`, etc.).
+
+---
+
+## 6. **Middleware / Fairings / Guards**
+
+1. **Auth Middleware** (`middleware/auth.rs`)  
+   - For Rocket, you might create a [Request Guard](https://rocket.rs/v0.5-rc/guide/requests/#guards) that checks a JWT in the `Authorization` header.  
+   - Or a [Fairing](https://rocket.rs/v0.5-rc/guide/fairings/) that runs code before/after requests.  
+
+2. **Logging** (`middleware/logging.rs`)  
+   - Another Fairing or something that logs requests/responses.
+
+3. **Enable them** in `main.rs`  
+   - Something like `.attach(MyLoggingFairing)` or route-level guards.
+
+---
+
+## 7. **Testing**
+
+1. **Integration Tests** in `/tests/`  
+   - You can spin up a Rocket instance pointing to a test DB.  
+   - Make requests to your routes (via `rocket::local::blocking::Client` or `reqwest`) and assert responses.
+
+2. **Unit Tests** near each module  
+   - For example, inside `controllers/auth/register.rs`, add `#[cfg(test)] mod tests { ... }` to test the registration logic directly.
+
+---
+
+## 8. **Iterate and Refine**
+
+- **Add new migrations** as you evolve the schema.  
+- **Regenerate `schema.rs`** after each DB change.  
+- **Update models** and controllers accordingly.  
+- **Expand routes** or add new modules (e.g., roles, permissions).  
+- **Optimize** or tune your code, queries, and error handling.
+
+---
+
+## 9. **Deployment Considerations** (Optional)
+
+- **Production environment**: provide `DATABASE_URL` via system environment variables (Docker, systemd, etc.).  
+- **Rocket** typically runs behind a reverse proxy like Nginx, or you can run it standalone.  
+- **Security**: Ensure HTTPS, secure JWT secrets, password hashing, etc.
+
+---
+
+### Summary
+
+1. **Initialize** project & set up dependencies.  
+2. **Configure DB** (Diesel CLI, migrations, `schema.rs`).  
+3. **Define models** and set up a **DB connection pool**.  
+4. **Write controllers** (business logic) and **routes** (thin HTTP handlers).  
+5. **Add utility modules** (validation, JWT, hashing) and **middleware** (auth guards, logging).  
+6. **Test** your API with unit/integration tests.  
+7. **Iterate** on migrations, schema, and code.  
+8. **Deploy** securely to production when ready.
