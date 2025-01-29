@@ -54,13 +54,7 @@ userspace/
 
 ## 1. **Configure the Database**
 
-1. **Install Diesel CLI** (if you haven’t already)  
-
-   ```bash
-      cargo install diesel_cli --no-default-features --features postgres
-   ```
-
-2. **Set up Diesel**  
+1. **Set up Diesel**  
 
    ```bash
       diesel setup
@@ -74,7 +68,7 @@ userspace/
 
    Diesel will create a `diesel.toml` file and maybe set up initial migrations.
 
-3. **Create your first migration**  
+2. **Create your first migration**  
 
    ```bash
       diesel migration generate create_users
@@ -84,7 +78,7 @@ userspace/
    - Fill in `up.sql`: e.g., `CREATE TABLE users (...)`.  
    - Fill in `down.sql`: e.g., `DROP TABLE users;`.
 
-4. **Run the migration**  
+3. **Run the migration**  
 
    ```bash
       diesel migration run
@@ -92,7 +86,7 @@ userspace/
 
    This applies the SQL to your local database.
 
-5. **Generate `schema.rs`**  
+4. **Generate `schema.rs`**  
 
    ```bash
       diesel print-schema > src/models/schema.rs
