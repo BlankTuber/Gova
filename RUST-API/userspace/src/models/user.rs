@@ -1,5 +1,6 @@
 use diesel::prelude::*;
 use serde::{Serialize, Deserialize};
+use crate::models::schema::users;
 
 #[derive(Queryable, Insertable, Identifiable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = users)]
@@ -30,6 +31,6 @@ pub struct UpdateUser {
     pub username: Option<String>,
     pub email: Option<String>,
     pub password_hash: Option<String>,
-    pub user_status: Option<String>,  // "active", "banned", "suspended"
-    pub theme_preference: Option<String>,  // "dark" or "light"
+    pub user_status: Option<String>,
+    pub theme_preference: Option<String>,
 }

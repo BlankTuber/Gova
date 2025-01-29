@@ -1,5 +1,6 @@
 use diesel::prelude::*;
 use serde::{Serialize, Deserialize};
+use crate::models::schema::permissions;
 
 #[derive(Queryable, Insertable, Identifiable, Serialize, Deserialize, Debug)]
 #[diesel(table_name = permissions)]

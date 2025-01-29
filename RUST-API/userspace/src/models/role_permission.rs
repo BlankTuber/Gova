@@ -2,6 +2,7 @@ use diesel::prelude::*;
 use serde::{Serialize, Deserialize};
 use super::role::Role;
 use super::permission::Permission;
+use crate::models::schema::role_permissions;
 
 #[derive(Queryable, Insertable, Identifiable, Associations, Serialize, Deserialize, Debug)]
 #[diesel(table_name = role_permissions)]

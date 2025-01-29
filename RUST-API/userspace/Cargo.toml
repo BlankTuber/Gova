@@ -4,7 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-diesel = { version = "2.2.6", features = ["postgres", "r2d2"] }
+chrono = {version = "0.4.39", features = ["serde"]}
+diesel = { version = "2.2.6", features = ["postgres", "r2d2", "uuid", "chrono"] }
 diesel_migrations = "2.2.0"
 dotenv = "0.15.0"
 jsonwebtoken = "9.3.0"
@@ -12,5 +13,5 @@ lettre = "0.11.11"
 rocket = { version = "0.5.1", features = ["json"] }
 serde = { version = "1.0.217", features = ["derive"] }
 tokio = { version = "1.43.0", features = ["full"] }
-uuid = "1.12.1"
+uuid = {version = "1.12.1", features = ["v4", "serde"]}
 validator = "0.20.0"

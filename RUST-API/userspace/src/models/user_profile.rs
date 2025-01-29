@@ -1,6 +1,7 @@
 use diesel::prelude::*;
 use serde::{Serialize, Deserialize};
-use super::user::User; // Import User model
+use super::user::User;
+use crate::models::schema::user_profiles;
 
 #[derive(Queryable, Insertable, Identifiable, Associations, Serialize, Deserialize, Debug)]
 #[diesel(table_name = user_profiles)]
