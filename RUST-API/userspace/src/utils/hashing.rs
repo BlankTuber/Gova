@@ -11,7 +11,6 @@ pub fn hash_password(password: &str) -> Result<String, Error> {
         .to_string())
 }
 
-#[allow(dead_code)]
 pub fn verify_password(password: &str, hash: &str) -> Result<bool, Error> {
     let parsed_hash = PasswordHash::new(hash)?;
     Ok(Argon2::default()

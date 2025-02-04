@@ -1,5 +1,8 @@
 #[macro_use] extern crate rocket;
 
+use rocket::serde::json::{Json, json};
+use rocket::serde::json::Value;
+use rocket::Request;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 
@@ -7,6 +10,34 @@ mod middleware;
 mod models;
 mod routes;
 mod utils;
+use middleware::cors::CORS;
+
+#[catch(404)]
+fn not_found() -> Json<Value> {
+    Json(json!({
+        "status": 404,
+        "error": {
+            "message": "The path you're looking for seems to be missing in the void.",
+            "details": "Check the URL and try again, or navigate back to safety.",
+            "code": "RESOURCE_NOT_FOUND"
+        },
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    }))
+}
+
+#[catch(500)]
+fn internal_error(req: &Request) -> Json<Value> {
+    Json(json!({
+        "status": 500,
+        "error": {
+            "message": "Something went wrong on our end.",
+            "details": "Our team has been notified and is working on it.",
+            "code": "INTERNAL_SERVER_ERROR",
+            "path": req.uri().path().to_string()
+        },
+        "timestamp": chrono::Utc::now().to_rfc3339()
+    }))
+}
 
 #[launch]
 async fn rocket() -> _ {
@@ -20,11 +51,8 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(pool)
-        .mount("/api/auth", routes![
-            routes::auth::register::register,
-            // Add more routes
-        ])
-        .mount("/api/users", routes![
-            // User routes
-        ])
+        .attach(CORS)
+        .mount("/api/auth", routes::auth_routes())
+        .mount("/api/users", routes![])
+        .register("/", catchers![not_found, internal_error])
 }
