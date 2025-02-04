@@ -1,5 +1,0 @@
-DROP TABLE IF EXISTS user_ips;
-DROP TABLE IF EXISTS user_stats;
-DROP TABLE IF EXISTS user_socials;
-DROP TABLE IF EXISTS user_profiles;
-DROP TABLE IF EXISTS users;
