@@ -3,8 +3,6 @@
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 
-mod config;
-mod controllers;
 mod middleware;
 mod models;
 mod routes;
