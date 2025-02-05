@@ -16,71 +16,22 @@ Project Gova serves as a personal laboratory where various technologies, concept
 
 | Project | Description | Tech Stack | Status |
 |---------|-------------|------------|---------|
-| [🧹 Blank's Comment Remover](https://github.com/BlankTuber/Gova/tree/main/blank-s-comment-remover) | VS Code extension that removes comments from your code. Perfect for sharing clean code snippets or preparing code for documentation. | TypeScript, VS Code API | 🟡 Stable (with known issues) |
+| [🧹 Blank's Comment Remover](https://github.com/BlankTuber/Gova/tree/main/blank-s-comment-remover) | VS Code extension that removes comments from your code. Perfect for sharing clean code snippets or preparing code for documentation. | Javascript, VS Code API | 🟡 Stable (with known issues) |
 | [📚 Bookmark Sorter](https://github.com/BlankTuber/Gova/tree/main/bookmark-sorter) | Chrome extension for organizing your bookmarks with customizable sorting options. | JavaScript, Chrome Extensions API | 🟡 Stable (basic features) |
-| [🔑 RUST-API](https://github.com/BlankTuber/Gova/tree/main/RUST-API) | Centralized user authentication and data management API that enables seamless data transfer between different Gova projects. | Rust, SQL | 🟢 Active Development |
+| [🔑 RUST-API](https://github.com/BlankTuber/Gova/tree/main/RUST-API) | Centralized user authentication and data management API that enables seamless data transfer between different Gova projects. | Rust, PostgreSQL | 🟢 Active Development |
 
 ### Quick Links
 
 - [📘 Blank's Comment Remover on VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=QuidqueStudio.blank-comment-remover)
-- [🔧 Installation Guide](./docs/installation.md)
 
 ## 🛠️ Technologies
 
 This learning playground explores various technologies including:
 
 - **Browser Extensions**: Chrome Extensions API, JavaScript
-- **IDE Extensions**: VS Code API, TypeScript
-- **Backend**: Rust, SQL
-- **Tools**: Cargo, Node.js, npm
-
-## 🚗 Getting Started
-
-1. Clone the repository:
-```bash
-git clone https://github.com/BlankTuber/Gova.git
-```
-
-2. Each project has its own setup:
-
-### Blank's Comment Remover
-```bash
-cd blank-s-comment-remover
-npm install
-npm run build
-```
-Or install directly from [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=QuidqueStudio.blank-comment-remover)
-
-### Bookmark Sorter
-```bash
-cd bookmark-sorter
-# Load as unpacked extension in Chrome
-```
-
-### RUST-API
-```bash
-cd RUST-API
-cargo build
-cargo run
-```
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-
-## 🤝 Contributing
-
-While this is primarily a personal learning repository, suggestions and feedback are always welcome! Feel free to:
-
-1. Fork the repository
-2. Create a new branch
-3. Submit a pull request
-
-## 📬 Contact
-
-Feel free to reach out if you have questions or want to discuss any of the projects!
-
-[Your preferred contact method here]
+- **IDE Extensions**: VS Code API, Javascript
+- **Backend**: Rust, PostgreSQL
+- **Tools**: Cargo, Node.js, npm, PostgreSQL
 
 ---
 *This repository is actively growing as new learning adventures unfold!* 🌟
