@@ -20,7 +20,7 @@ pub struct User {
 pub struct RegisterRequest {
     #[validate(email)]
     pub email: String,
-    #[validate(length(min = 3, max = 50))]
+    #[validate(length(min = 3, max = 30))]
     pub username: String,
     #[validate(length(min = 8))]
     pub password: String,
@@ -32,4 +32,17 @@ pub struct LoginRequest {
     pub email: String,
     #[validate(length(min = 8))]
     pub password: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Validate)]
+pub struct DeleteUser {
+    pub id: Uuid
+}
+
+#[derive(Debug, Deserialize, Serialize, Validate)]
+pub struct UpdateUser {
+    #[validate(email)]
+    pub email: Option<String>,
+    #[validate(length(min = 3, max = 30))]
+    pub username: Option<String>
 }

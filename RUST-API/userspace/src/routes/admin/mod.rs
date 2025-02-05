@@ -17,6 +17,7 @@ pub fn routes() -> Vec<Route> {
         permissions::get_all_permissions,
         users::assign_role_to_user,
         users::get_all_users,
+        users::delete_user,
         all_options
     ]
 }

@@ -1,4 +1,5 @@
 use rocket::serde::json::{Json, json};
+use rocket::time::Duration;
 use rocket::State;
 use rocket::http::{Status, Cookie, CookieJar, SameSite};
 use rocket::serde::json::Value;
@@ -51,6 +52,7 @@ pub async fn register(
     cookie.set_secure(true);
     cookie.set_http_only(true);
     cookie.set_same_site(SameSite::Strict);
+    cookie.set_max_age(Duration::days(7));
 
     // Add the cookie to the response
     cookies.add_private(cookie);

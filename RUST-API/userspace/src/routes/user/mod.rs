@@ -1,5 +1,7 @@
 use rocket::Route;
 pub mod get_user;
+pub mod update_email;
+pub mod update_username;
 
 #[options("/<_..>")]
 fn all_options() {
@@ -7,5 +9,10 @@ fn all_options() {
 }
 
 pub fn routes() -> Vec<Route> {
-    routes![get_user::get_user, all_options]
+    routes![
+            get_user::get_user,
+            update_email::update_email,
+            update_username::update_username,
+            all_options
+        ]
 }

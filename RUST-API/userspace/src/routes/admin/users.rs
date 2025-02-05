@@ -8,6 +8,7 @@ use validator::Validate;
 use crate::middleware::verify_jwt::AuthenticatedUser;
 use crate::utils::auth::is_admin;
 use crate::models::user_roles::AssignRole;
+use crate::models::user::DeleteUser;
 
 #[post("/role/user", format="json", data="<user_data>")]
 pub async fn assign_role_to_user(
@@ -73,4 +74,44 @@ pub async fn get_all_users(
         "message": "Found users!",
         "users": users_json
     })))
+}
+
+#[delete("/user", format="json", data="<user_data>")]
+pub async fn delete_user(
+    admin_user: AuthenticatedUser,
+    pool: &State<PgPool>,
+    user_data: Json<DeleteUser>
+) -> Result<Json<Value>, Status> {
+    // Ensure the requesting user has admin privileges
+    if !is_admin(pool.inner(), admin_user.user_id).await.map_err(|_| Status::InternalServerError)? {
+        return Err(Status::Forbidden);
+    }
+
+    let user = user_data.into_inner();
+    
+    // Validate incoming request data
+    if let Err(_) = user.validate() {
+        return Err(Status::BadRequest);
+    }
+
+    // Delete user from the database
+    let result = sqlx::query!(
+        r#"
+        DELETE FROM users WHERE id = $1
+        "#,
+        user.id
+    )
+    .execute(pool.inner())
+    .await;
+
+    match result {
+        Ok(query_result) => {
+            if query_result.rows_affected() == 0 {
+                Err(Status::NotFound)
+            } else {
+                Ok(Json(json!({ "message": "User successfully deleted!" })))
+            }
+        },
+        Err(_) => Err(Status::InternalServerError),
+    }
 }
