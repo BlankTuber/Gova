@@ -46,3 +46,35 @@ pub async fn make_permission(
         "created_at": result.created_at
     })))
 }
+
+#[get("/permissions")]
+pub async fn get_all_permissions(
+    pool: &State<PgPool>,
+    admin_user: AuthenticatedUser
+) -> Result<Json<Value>, Status> {
+    if !is_admin(pool.inner(), admin_user.user_id).await.map_err(|_| Status::InternalServerError)? {
+        return Err(Status::Forbidden);
+    }
+
+    let permissions = sqlx::query!(
+        r#"
+        SELECT id, name FROM permissions
+        "#
+    )
+    .fetch_all(pool.inner())
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    // Convert the query result into JSON
+    let permissions_json: Vec<Value> = permissions.iter().map(|permission| {
+        json!({
+            "id": permission.id,
+            "name": permission.name,
+        })
+    }).collect();
+
+    Ok(Json(json!({
+        "message": "Found permissions!",
+        "permissions": permissions_json
+    })))
+}

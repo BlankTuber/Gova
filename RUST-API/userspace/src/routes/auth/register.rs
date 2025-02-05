@@ -26,13 +26,13 @@ pub async fn register(
 
     let result = sqlx::query!(
         r#"
-        INSERT INTO users (email, username, password_hash)
-        VALUES ($1, $2, $3)
+        INSERT INTO users (email, username, password_hash, last_login)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
         RETURNING id, email, username, created_at
         "#,
         user.email,
         user.username,
-        password_hash
+        password_hash,
     )
     .fetch_one(pool.inner())
     .await

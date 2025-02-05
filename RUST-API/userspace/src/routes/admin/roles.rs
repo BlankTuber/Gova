@@ -6,6 +6,7 @@ use sqlx::PgPool;
 use validator::Validate;
 
 use crate::models::role::CreateRole;
+use crate::models::role_permissions::AssignPermission;
 use crate::utils::auth::is_admin;
 use crate::middleware::verify_jwt::AuthenticatedUser;
 
@@ -44,5 +45,73 @@ pub async fn make_role(
         "id": result.id,
         "name": result.name,
         "created_at": result.created_at
+    })))
+}
+
+
+#[post("/permission/role", format="json", data="<permission_data>")]
+pub async fn assign_permission_to_role(
+    pool: &State<PgPool>,
+    permission_data: Json<AssignPermission>,
+    admin_user: AuthenticatedUser
+) -> Result<Json<Value>, Status> {
+    if !is_admin(pool.inner(), admin_user.user_id).await.map_err(|_| Status::InternalServerError)? {
+        return Err(Status::Forbidden);
+    }
+
+    let permission = permission_data.into_inner();
+
+    // Validate input
+    if let Err(_) = permission.validate() {
+        return Err(Status::BadRequest);
+    }
+
+    let result = sqlx::query!(
+        r#"
+        INSERT INTO role_permissions (role_id, permission_id)
+        VALUES ($1, $2)
+        "#, permission.role_id, permission.permission_id
+    )
+    .execute(pool.inner())
+    .await;
+
+    if result.is_err() {
+        return Err(Status::InternalServerError);
+    }
+
+    Ok(Json(json!({ "message": "Permission successfully assigned to role!" })))
+}
+
+
+
+#[get("/roles")]
+pub async fn get_all_roles(
+    pool: &State<PgPool>,
+    admin_user: AuthenticatedUser
+) -> Result<Json<Value>, Status> {
+    if !is_admin(pool.inner(), admin_user.user_id).await.map_err(|_| Status::InternalServerError)? {
+        return Err(Status::Forbidden);
+    }
+
+    let roles = sqlx::query!(
+        r#"
+        SELECT id, name FROM roles
+        "#
+    )
+    .fetch_all(pool.inner())
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    // Convert the query result into JSON
+    let roles_json: Vec<Value> = roles.iter().map(|role| { // Changed variable name from `roles` to `role`
+        json!({
+            "id": role.id,
+            "name": role.name,
+        })
+    }).collect();
+
+    Ok(Json(json!({
+        "message": "Found roles!",
+        "roles": roles_json
     })))
 }
