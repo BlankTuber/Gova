@@ -9,7 +9,6 @@ pub struct Claims {
     pub exp: usize,
 }
 
-#[allow(dead_code)]
 pub fn create_token(user_id: Uuid) -> Result<String> {
     let expiration = chrono::Utc::now()
         .checked_add_signed(chrono::Duration::hours(24))

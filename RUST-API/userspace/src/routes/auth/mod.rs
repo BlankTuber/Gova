@@ -1,6 +1,7 @@
 use rocket::Route;
 pub mod login;
 pub mod register;
+pub mod logout;
 
 #[options("/<_..>")]
 fn all_options() {
@@ -8,5 +9,5 @@ fn all_options() {
 }
 
 pub fn routes() -> Vec<Route> {
-    routes![register::register, login::login, all_options]
+    routes![register::register, login::login, logout::logout, all_options]
 }

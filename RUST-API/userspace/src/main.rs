@@ -53,6 +53,7 @@ async fn rocket() -> _ {
         .manage(pool)
         .attach(CORS)
         .mount("/api/auth", routes::auth_routes())
+        .mount("/api/admin", routes::admin_routes())
         .mount("/api/users", routes![])
         .register("/", catchers![not_found, internal_error])
 }
