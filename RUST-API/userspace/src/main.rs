@@ -54,6 +54,6 @@ async fn rocket() -> _ {
         .attach(CORS)
         .mount("/api/auth", routes::auth_routes())
         .mount("/api/admin", routes::admin_routes())
-        .mount("/api/users", routes![])
+        .mount("/api/users", routes::user_routes())
         .register("/", catchers![not_found, internal_error])
 }
