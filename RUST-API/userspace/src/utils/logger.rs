@@ -2,6 +2,7 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use crate::models::log::{Log, CreateLog};
 use uuid::Uuid;
+use validator::Validate;
 
 pub async fn log_action(
     pool: &sqlx::PgPool,

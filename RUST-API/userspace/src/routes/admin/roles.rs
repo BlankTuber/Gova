@@ -46,7 +46,7 @@ pub async fn make_role(
 
     // Log successful
     let log = CreateLog {
-        user_id: Some(admin_user.user_id),
+        user_id: Some(user.user_id),
         action: "role_created_successfully".to_string(),
         details: json!({
             "role_id": result.id,
@@ -122,7 +122,7 @@ pub async fn delete_role(
 
     // Log successful
     let log = CreateLog {
-        user_id: Some(admin_user.user_id),
+        user_id: Some(user.user_id),
         action: "role_deleted_successfully".to_string(),
         details: json!({
             "role_id": role_data.id,

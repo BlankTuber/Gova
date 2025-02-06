@@ -133,6 +133,7 @@ pub async fn get_all_users(
     })))
 }
 
+#[delete("/user", format="json", data="<user_data>")]
 pub async fn delete_user(
     admin_user: AuthenticatedUser,
     pool: &State<PgPool>,

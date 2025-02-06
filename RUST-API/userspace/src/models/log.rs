@@ -5,7 +5,7 @@ use chrono::{DateTime, Utc};
 use validator::Validate;
 use rocket::serde::json::Value;
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize, FromRow, Validate)]
 pub struct Log {
     pub id: Uuid,
     pub user_id: Option<Uuid>,
