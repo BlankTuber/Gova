@@ -72,7 +72,6 @@ pub async fn remove_user_from_role(
 
     match result {
         Ok(_) => Ok(Json(json!({ "message": "User successfully removed from role!" }))),
-        Err(sqlx::Error::Database(err)) if err.is_unique_violation() => Err(Status::Conflict),
         Err(_) => Err(Status::InternalServerError),
     }
 }
