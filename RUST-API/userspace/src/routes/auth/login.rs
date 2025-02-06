@@ -9,6 +9,9 @@ use crate::models::user::LoginRequest;
 use crate::utils::hashing::verify_password;
 use crate::utils::create_jwt::create_token;
 
+use crate::models::log::CreateLog;
+use crate::utils::logger::log_action;
+
 #[post("/login", format = "json", data = "<login_data>")]
 pub async fn login(
     cookies: &CookieJar<'_>,
@@ -69,6 +72,17 @@ pub async fn login(
 
     // Add the cookie to the response
     cookies.add_private(cookie);
+
+    // Log successful login
+    let log = CreateLog {
+        user_id: Some(user.id),
+        action: "login_successful".to_string(),
+        details: json!({
+            "email": user.email,
+            "username": user.username,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     // Respond with a success message
     Ok(Json(json!({

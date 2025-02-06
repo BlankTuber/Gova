@@ -6,7 +6,9 @@ use sqlx::PgPool;
 use validator::Validate;
 
 use crate::middleware::verify_jwt::AuthenticatedUser;
+use crate::models::log::CreateLog;
 use crate::models::user::UpdateUser;
+use crate::utils::logger::log_action;
 
 #[put("/email", format="json", data="<email_data>")]
 pub async fn update_email(
@@ -38,6 +40,16 @@ pub async fn update_email(
     if result.rows_affected() == 0 {
         return Err(Status::NotFound);
     }
+
+    // Log successful update
+    let log = CreateLog {
+        user_id: Some(user.user_id),
+        action: "email_update_successful".to_string(),
+        details: json!({
+            "email": email.email,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({
         "message": "Email successfully updated!"

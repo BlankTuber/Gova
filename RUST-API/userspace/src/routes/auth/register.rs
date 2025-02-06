@@ -9,6 +9,8 @@ use validator::Validate;
 use crate::models::user::RegisterRequest;
 use crate::utils::hashing::hash_password;
 use crate::utils::create_jwt::create_token;
+use crate::models::log::CreateLog;
+use crate::utils::logger::log_action;
 
 #[post("/register", format = "json", data = "<user_data>")]
 pub async fn register(
@@ -56,6 +58,17 @@ pub async fn register(
 
     // Add the cookie to the response
     cookies.add_private(cookie);
+
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(result.id),
+        action: "register_successful".to_string(),
+        details: json!({
+            "email": result.email,
+            "username": result.username,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({
         "message": "User registered and logged in successfully!"

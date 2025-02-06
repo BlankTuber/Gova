@@ -5,11 +5,13 @@ use rocket::serde::json::Value;
 use sqlx::PgPool;
 use validator::Validate;
 
+use crate::models::log::CreateLog;
 use crate::models::role::CreateRole;
 use crate::models::role::DeleteRole;
 use crate::models::role_permissions::AssignPermission;
 use crate::utils::auth::is_admin;
 use crate::middleware::verify_jwt::AuthenticatedUser;
+use crate::utils::logger::log_action;
 
 #[post("/role", format = "json", data = "<role_data>")]
 pub async fn make_role(
@@ -41,6 +43,16 @@ pub async fn make_role(
         sqlx::Error::Database(err) if err.is_unique_violation() => Status::Conflict,
         _ => Status::InternalServerError,
     })?;
+
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "role_created_successfully".to_string(),
+        details: json!({
+            "role_id": result.id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({
         "id": result.id,
@@ -108,6 +120,16 @@ pub async fn delete_role(
         .await
         .map_err(|_| Status::InternalServerError)?;
 
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "role_deleted_successfully".to_string(),
+        details: json!({
+            "role_id": role_data.id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
+
     Ok(Json(json!({
         "id": role.id,
         "name": role.name,
@@ -148,6 +170,17 @@ pub async fn assign_permission_to_role(
     if result.is_err() {
         return Err(Status::InternalServerError);
     }
+
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "permission_added_to_role_successfully".to_string(),
+        details: json!({
+            "role_id": permission.role_id,
+            "permission_id": permission.permission_id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({ "message": "Permission successfully assigned to role!" })))
 }

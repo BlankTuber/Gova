@@ -6,9 +6,11 @@ use sqlx::PgPool;
 use validator::Validate;
 
 use crate::middleware::verify_jwt::AuthenticatedUser;
+use crate::models::log::CreateLog;
 use crate::utils::auth::is_admin;
 use crate::models::user_roles::AssignRole;
 use crate::models::user::DeleteUser;
+use crate::utils::logger::log_action;
 
 #[post("/role/user", format="json", data="<user_data>")]
 pub async fn assign_role_to_user(
@@ -35,6 +37,17 @@ pub async fn assign_role_to_user(
     )
     .execute(pool.inner())
     .await;
+
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "user_added_to_role_successfull".to_string(),
+        details: json!({
+            "user_id": user.user_id,
+            "role_id": user.role_id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     match result {
         Ok(_) => Ok(Json(json!({ "message": "User successfully assigned to role!" }))),
@@ -69,6 +82,17 @@ pub async fn remove_user_from_role(
     )
     .execute(pool.inner())
     .await;
+
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "user_removed_from_role_successfull".to_string(),
+        details: json!({
+            "user_id": user.user_id,
+            "role_id": user.role_id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     match result {
         Ok(_) => Ok(Json(json!({ "message": "User successfully removed from role!" }))),
@@ -109,7 +133,6 @@ pub async fn get_all_users(
     })))
 }
 
-#[delete("/user", format="json", data="<user_data>")]
 pub async fn delete_user(
     admin_user: AuthenticatedUser,
     pool: &State<PgPool>,
@@ -127,24 +150,59 @@ pub async fn delete_user(
         return Err(Status::BadRequest);
     }
 
+    // Start a transaction
+    let mut tx = pool.inner().begin().await.map_err(|_| Status::InternalServerError)?;
+
+    // Delete user_role first (foreign key relationship)
+    let role_delete_result = sqlx::query!(
+        r#"
+        DELETE FROM user_roles WHERE user_id = $1
+        "#,
+        user.id
+    )
+    .execute(&mut *tx)
+    .await;
+
+    if let Err(_) = role_delete_result {
+        // Rollback the transaction if role deletion fails
+        let _ = tx.rollback().await;
+        return Err(Status::InternalServerError);
+    }
+
     // Delete user from the database
-    let result = sqlx::query!(
+    let user_delete_result = sqlx::query!(
         r#"
         DELETE FROM users WHERE id = $1
         "#,
         user.id
     )
-    .execute(pool.inner())
+    .execute(&mut *tx)
     .await;
 
-    match result {
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "user_deleted_successfully".to_string(),
+        details: json!({
+            "user_id": user.id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
+
+    match user_delete_result {
         Ok(query_result) => {
             if query_result.rows_affected() == 0 {
+                let _ = tx.rollback().await;
                 Err(Status::NotFound)
             } else {
-                Ok(Json(json!({ "message": "User successfully deleted!" })))
+                // Commit the transaction if both operations succeeded
+                tx.commit().await.map_err(|_| Status::InternalServerError)?;
+                Ok(Json(json!({ "message": "User and associated roles successfully deleted!" })))
             }
         },
-        Err(_) => Err(Status::InternalServerError),
+        Err(_) => {
+            let _ = tx.rollback().await;
+            Err(Status::InternalServerError)
+        }
     }
 }

@@ -5,10 +5,12 @@ use rocket::serde::json::Value;
 use sqlx::PgPool;
 use validator::Validate;
 
+use crate::models::log::CreateLog;
 use crate::models::permission::CreatePermission;
 use crate::models::permission::DeletePermission;
 use crate::middleware::verify_jwt::AuthenticatedUser;
 use crate::utils::auth::is_admin;
+use crate::utils::logger::log_action;
 
 #[post("/permission", format = "json", data = "<permission_data>")]
 pub async fn make_permission(
@@ -40,6 +42,16 @@ pub async fn make_permission(
         sqlx::Error::Database(err) if err.is_unique_violation() => Status::Conflict,
         _ => Status::InternalServerError,
     })?;
+
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "permission_created_successfully".to_string(),
+        details: json!({
+            "permission_id": result.id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({
         "id": result.id,
@@ -125,6 +137,16 @@ pub async fn delete_permission(
     tx.commit()
         .await
         .map_err(|_| Status::InternalServerError)?;
+
+    // Log successful
+    let log = CreateLog {
+        user_id: Some(admin_user.user_id),
+        action: "permission_deleted_successfully".to_string(),
+        details: json!({
+            "permission_id": permission_data.id,
+        }),
+    };
+    let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({
         "id": permission.id,
