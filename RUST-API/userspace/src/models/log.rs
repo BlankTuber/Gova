@@ -23,3 +23,5 @@ pub struct CreateLog {
 
     pub details: Value,
 }
+
+// ToDo: Make logging more "vocal"
