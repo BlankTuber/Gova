@@ -16,3 +16,8 @@ pub struct CreatePermission {
     #[validate(length(min = 3, max = 50))]
     pub name: String,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DeletePermission {
+    pub id: Uuid,
+}

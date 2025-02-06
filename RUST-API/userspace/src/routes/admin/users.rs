@@ -43,6 +43,40 @@ pub async fn assign_role_to_user(
     }
 }
 
+#[delete("/role/user", format="json", data="<user_data>")]
+pub async fn remove_user_from_role(
+    pool: &State<PgPool>,
+    user_data: Json<AssignRole>,
+    admin_user: AuthenticatedUser
+) -> Result<Json<Value>, Status> {
+    if !is_admin(pool.inner(), admin_user.user_id).await.map_err(|_| Status::InternalServerError)? {
+        return Err(Status::Forbidden);
+    }
+
+    let user = user_data.into_inner();
+
+    // Proper validation error handling
+    if let Err(_) = user.validate() {
+        return Err(Status::BadRequest);
+    }
+
+    let result = sqlx::query!(
+        r#"
+        DELETE FROM user_roles
+        WHERE user_id = $1
+        AND role_id = $2
+        "#, user.user_id, user.role_id
+    )
+    .execute(pool.inner())
+    .await;
+
+    match result {
+        Ok(_) => Ok(Json(json!({ "message": "User successfully removed from role!" }))),
+        Err(sqlx::Error::Database(err)) if err.is_unique_violation() => Err(Status::Conflict),
+        Err(_) => Err(Status::InternalServerError),
+    }
+}
+
 #[get("/users")]
 pub async fn get_all_users(
     pool: &State<PgPool>,

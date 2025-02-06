@@ -15,3 +15,8 @@ pub struct Role {
 pub struct CreateRole {
     pub name: String,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct DeleteRole {
+    pub id: Uuid,
+}

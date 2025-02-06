@@ -6,6 +6,7 @@ use sqlx::PgPool;
 use validator::Validate;
 
 use crate::models::permission::CreatePermission;
+use crate::models::permission::DeletePermission;
 use crate::middleware::verify_jwt::AuthenticatedUser;
 use crate::utils::auth::is_admin;
 
@@ -76,5 +77,61 @@ pub async fn get_all_permissions(
     Ok(Json(json!({
         "message": "Found permissions!",
         "permissions": permissions_json
+    })))
+}
+
+#[delete("/permission", format = "json", data = "<permission_data>")]
+pub async fn delete_permission(
+    pool: &State<PgPool>,
+    user: AuthenticatedUser,
+    permission_data: Json<DeletePermission>,
+) -> Result<Json<Value>, Status> {
+    if !is_admin(pool.inner(), user.user_id).await? {
+        return Err(Status::Forbidden);
+    }
+
+    let mut tx = pool.inner()
+        .begin()
+        .await
+        .map_err(|_| Status::InternalServerError)?;
+
+    // Delete from role_permissions first
+    let role_permissions_count = sqlx::query!(
+        r#"
+        DELETE FROM role_permissions 
+        WHERE permission_id = $1
+        "#,
+        permission_data.id,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    // Delete the permission itself
+    let permission_result = sqlx::query!(
+        r#"
+        DELETE FROM permissions 
+        WHERE id = $1
+        RETURNING id, name, created_at
+        "#,
+        permission_data.id,
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    let permission = permission_result.ok_or(Status::NotFound)?;
+
+    tx.commit()
+        .await
+        .map_err(|_| Status::InternalServerError)?;
+
+    Ok(Json(json!({
+        "id": permission.id,
+        "name": permission.name,
+        "created_at": permission.created_at,
+        "deleted_associations": {
+            "role_permissions": role_permissions_count.rows_affected()
+        }
     })))
 }

@@ -6,6 +6,7 @@ use sqlx::PgPool;
 use validator::Validate;
 
 use crate::models::role::CreateRole;
+use crate::models::role::DeleteRole;
 use crate::models::role_permissions::AssignPermission;
 use crate::utils::auth::is_admin;
 use crate::middleware::verify_jwt::AuthenticatedUser;
@@ -48,6 +49,75 @@ pub async fn make_role(
     })))
 }
 
+
+#[delete("/role", format = "json", data = "<role_data>")]
+pub async fn delete_role(
+    pool: &State<PgPool>,
+    user: AuthenticatedUser,
+    role_data: Json<DeleteRole>,
+) -> Result<Json<Value>, Status> {
+    if !is_admin(pool.inner(), user.user_id).await? {
+        return Err(Status::Forbidden);
+    }
+
+    let mut tx = pool.inner()
+        .begin()
+        .await
+        .map_err(|_| Status::InternalServerError)?;
+
+    // Delete from role_permissions and get count
+    let role_permissions_count = sqlx::query!(
+        r#"
+        DELETE FROM role_permissions 
+        WHERE role_id = $1
+        "#,
+        role_data.id,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    // Delete from user_roles and get count
+    let user_roles_count = sqlx::query!(
+        r#"
+        DELETE FROM user_roles 
+        WHERE role_id = $1
+        "#,
+        role_data.id,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    // Delete the role itself
+    let role_result = sqlx::query!(
+        r#"
+        DELETE FROM roles 
+        WHERE id = $1
+        RETURNING id, name, created_at
+        "#,
+        role_data.id,
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    let role = role_result.ok_or(Status::NotFound)?;
+
+    tx.commit()
+        .await
+        .map_err(|_| Status::InternalServerError)?;
+
+    Ok(Json(json!({
+        "id": role.id,
+        "name": role.name,
+        "created_at": role.created_at,
+        "deleted_associations": {
+            "role_permissions": role_permissions_count.rows_affected(),
+            "user_roles": user_roles_count.rows_affected()
+        }
+    })))
+}
 
 #[post("/permission/role", format="json", data="<permission_data>")]
 pub async fn assign_permission_to_role(
