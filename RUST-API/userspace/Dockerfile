@@ -5,7 +5,7 @@ RUN apk add --no-cache musl-dev openssl-dev pkgconfig
 
 # Create a new empty shell project
 WORKDIR /usr/src/app
-COPY RUST-API/userspace .
+COPY . .
 
 # Build for release
 RUN cargo build --release
@@ -20,7 +20,7 @@ RUN apk add --no-cache libgcc openssl
 COPY --from=builder /usr/src/app/target/release/userspace /usr/local/bin/
 
 # Copy .env file
-COPY RUST-API/userspace/.env /usr/local/bin/
+COPY .env /usr/local/bin/
 
 WORKDIR /usr/local/bin
 ENV ROCKET_ADDRESS=0.0.0.0
