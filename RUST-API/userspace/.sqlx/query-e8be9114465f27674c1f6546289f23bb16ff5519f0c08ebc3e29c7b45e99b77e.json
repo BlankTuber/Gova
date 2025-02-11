@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, email, username, password_hash, created_at\n        FROM users \n        WHERE email = $1\n        ",
+  "query": "\n        SELECT id, email, username, password_hash, created_at, last_login\n        FROM users \n        WHERE email = $1\n        ",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,11 @@
         "ordinal": 4,
         "name": "created_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "last_login",
+        "type_info": "Timestamptz"
       }
     ],
     "parameters": {
@@ -39,8 +44,9 @@
       false,
       false,
       false,
+      true,
       true
     ]
   },
-  "hash": "561444fd11c9807475a3e4647d715fe0ac6b86634fd8985d6c4013c6c6a3d8a4"
+  "hash": "e8be9114465f27674c1f6546289f23bb16ff5519f0c08ebc3e29c7b45e99b77e"
 }

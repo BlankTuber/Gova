@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT r.name, r.created_at,\n               COUNT(DISTINCT rp.permission_id) as permission_count,\n               COUNT(DISTINCT ur.user_id) as user_count\n        FROM roles r\n        LEFT JOIN role_permissions rp ON r.id = rp.role_id\n        LEFT JOIN user_roles ur ON r.id = ur.role_id\n        WHERE r.id = $1\n        GROUP BY r.id, r.name, r.created_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 2,
+        "name": "permission_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "user_count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "9e409f9fc1b33485b86e3de3b8315c6e9f59a92b08b94c9b2734509a950fd18a"
+}

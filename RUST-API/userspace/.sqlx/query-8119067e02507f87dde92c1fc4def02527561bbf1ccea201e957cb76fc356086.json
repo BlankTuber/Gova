@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT p.name, p.created_at,\n               COUNT(DISTINCT rp.role_id) as role_count,\n               ARRAY_AGG(DISTINCT r.name) FILTER (WHERE r.name IS NOT NULL) as role_names\n        FROM permissions p\n        LEFT JOIN role_permissions rp ON p.id = rp.permission_id\n        LEFT JOIN roles r ON rp.role_id = r.id\n        WHERE p.id = $1\n        GROUP BY p.id, p.name, p.created_at\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 2,
+        "name": "role_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 3,
+        "name": "role_names",
+        "type_info": "VarcharArray"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "8119067e02507f87dde92c1fc4def02527561bbf1ccea201e957cb76fc356086"
+}
