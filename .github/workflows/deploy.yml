@@ -1,0 +1,17 @@
+name: Deploy to Portainer
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'RUST-API/userspace/**'
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Portainer webhook
+        run: |
+          curl -X POST ${{ secrets.PORTAINER_WEBHOOK_URL }}
