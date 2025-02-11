@@ -49,13 +49,14 @@ async fn rocket() -> _ {
         .await
         .expect("Failed to connect to Postgres");
 
+    let cors = CORS::new();
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
     let config = rocket::Config::figment()
         .merge(("secret_key", secret.as_bytes()));
 
     rocket::custom(config)
         .manage(pool)
-        .attach(CORS)
+        .attach(cors)
         .mount("/api/auth", routes::auth_routes())
         .mount("/api/admin", routes::admin_routes())
         .mount("/api/users", routes::user_routes())
