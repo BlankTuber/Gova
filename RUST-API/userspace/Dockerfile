@@ -7,20 +7,33 @@ RUN apk add --no-cache \
     pkgconfig \
     gcc \
     make \
-    git
+    git \
+    perl \
+    alpine-sdk
 
 # Create a new empty shell project
 WORKDIR /usr/src/app
+
+# First, copy only Cargo.toml and Cargo.lock for dependency caching
+COPY Cargo.toml Cargo.lock ./
+
+# Create a dummy main.rs to build dependencies
+RUN mkdir src && \
+    echo "fn main() {}" > src/main.rs && \
+    cargo build --release && \
+    rm -rf src/
+
+# Now copy the real source code
 COPY . .
 
-# Show directory contents for debugging
-RUN ls -la
+# Show what we're working with
+RUN pwd && \
+    ls -la && \
+    echo "Content of Cargo.toml:" && \
+    cat Cargo.toml
 
-# Show Cargo.toml contents
-RUN cat Cargo.toml
-
-# Build with verbose output
-RUN RUSTFLAGS="-C target-feature=-crt-static" cargo build --release --verbose
+# Build the application
+RUN cargo build --release
 
 # Runtime stage
 FROM alpine:3.19
