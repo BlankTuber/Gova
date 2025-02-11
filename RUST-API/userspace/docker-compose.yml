@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  userapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${API_PORT:-3000}:3000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-database}
+      - JWT_SECRET=${JWT_SECRET}
+      - CLIENT_ORIGINS=${CLIENT_ORIGINS}
+      - ROCKET_ADDRESS=0.0.0.0
+    depends_on:
+      - db
+    restart: unless-stopped
+    networks:
+      - userapi-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-username}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-database}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - userapi-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-username} -d ${POSTGRES_DB:-database}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  userapi-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
