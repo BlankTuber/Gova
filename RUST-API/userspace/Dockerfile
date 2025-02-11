@@ -1,32 +1,17 @@
-FROM rust:1.75-alpine as builder
+FROM rust:1.75-slim as builder
 
 # Install build dependencies
-RUN apk add --no-cache \
-    musl-dev \
-    openssl-dev \
-    pkgconfig \
-    gcc \
-    make \
-    git \
-    perl \
-    alpine-sdk
+RUN apt-get update && \
+    apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create a new empty shell project
 WORKDIR /usr/src/app
-
-# First, copy only Cargo.toml and Cargo.lock for dependency caching
-COPY Cargo.toml Cargo.lock ./
-
-# Create a dummy main.rs to build dependencies
-RUN mkdir src && \
-    echo "fn main() {}" > src/main.rs && \
-    cargo build --release && \
-    rm -rf src/
-
-# Now copy the real source code
 COPY . .
 
-# Show what we're working with
+# Show what we're working with for debugging
 RUN pwd && \
     ls -la && \
     echo "Content of Cargo.toml:" && \
@@ -36,13 +21,15 @@ RUN pwd && \
 RUN cargo build --release
 
 # Runtime stage
-FROM alpine:3.19
+FROM debian:bullseye-slim
 
 # Install runtime dependencies
-RUN apk add --no-cache \
-    libgcc \
-    openssl \
-    postgresql-libs
+RUN apt-get update && \
+    apt-get install -y \
+    libssl1.1 \
+    libpq5 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the built binary
 COPY --from=builder /usr/src/app/target/release/userspace /usr/local/bin/
