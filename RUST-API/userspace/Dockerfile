@@ -19,9 +19,6 @@ RUN apk add --no-cache libgcc openssl
 # Copy the built binary
 COPY --from=builder /usr/src/app/target/release/userspace /usr/local/bin/
 
-# Copy .env file
-COPY .env /usr/local/bin/
-
 WORKDIR /usr/local/bin
 ENV ROCKET_ADDRESS=0.0.0.0
 EXPOSE 3000
