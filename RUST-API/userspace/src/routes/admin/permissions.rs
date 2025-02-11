@@ -10,7 +10,7 @@ use crate::models::permission::CreatePermission;
 use crate::models::permission::DeletePermission;
 use crate::middleware::verify_jwt::AuthenticatedUser;
 use crate::utils::auth::is_admin;
-use crate::utils::logger::log_action;
+use crate::utils::logger::{log_action, LogAction, LogBuilder};
 
 #[post("/permission", format = "json", data = "<permission_data>")]
 pub async fn make_permission(
@@ -102,6 +102,25 @@ pub async fn delete_permission(
         return Err(Status::Forbidden);
     }
 
+    // Fetch permission data and associations before deletion
+    let permission_info = sqlx::query!(
+        r#"
+        SELECT p.name, p.created_at,
+               COUNT(DISTINCT rp.role_id) as role_count,
+               ARRAY_AGG(DISTINCT r.name) FILTER (WHERE r.name IS NOT NULL) as role_names
+        FROM permissions p
+        LEFT JOIN role_permissions rp ON p.id = rp.permission_id
+        LEFT JOIN roles r ON rp.role_id = r.id
+        WHERE p.id = $1
+        GROUP BY p.id, p.name, p.created_at
+        "#,
+        permission_data.id
+    )
+    .fetch_optional(pool.inner())
+    .await
+    .map_err(|_| Status::InternalServerError)?
+    .ok_or(Status::NotFound)?;
+
     let mut tx = pool.inner()
         .begin()
         .await
@@ -134,19 +153,34 @@ pub async fn delete_permission(
 
     let permission = permission_result.ok_or(Status::NotFound)?;
 
+    // Enhanced logging with complete context
+    let log = LogBuilder::new(LogAction::Delete, "permission")
+        .with_user(user.user_id)
+        .with_resource_id(permission_data.id.to_string())
+        .with_previous_state(&json!({
+            "name": permission_info.name,
+            "created_at": permission_info.created_at,
+            "associations": {
+                "roles_count": permission_info.role_count,
+                "associated_roles": permission_info.role_names,
+            }
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .with_additional_details(&json!({
+            "deleted_by": user.user_id,
+            "deletion_timestamp": chrono::Utc::now().to_rfc3339(),
+            "cascade_deletions": {
+                "role_permissions_removed": role_permissions_count.rows_affected()
+            }
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .build();
+
+    let _ = log_action(pool.inner(), &log).await;
+
     tx.commit()
         .await
         .map_err(|_| Status::InternalServerError)?;
-
-    // Log successful
-    let log = CreateLog {
-        user_id: Some(user.user_id),
-        action: "permission_deleted_successfully".to_string(),
-        details: json!({
-            "permission_id": permission_data.id,
-        }),
-    };
-    let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({
         "id": permission.id,

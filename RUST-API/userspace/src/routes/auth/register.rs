@@ -9,8 +9,7 @@ use validator::Validate;
 use crate::models::user::RegisterRequest;
 use crate::utils::hashing::hash_password;
 use crate::utils::create_jwt::create_token;
-use crate::models::log::CreateLog;
-use crate::utils::logger::log_action;
+use crate::utils::logger::{log_action, LogAction, LogBuilder};
 
 #[post("/register", format = "json", data = "<user_data>")]
 pub async fn register(
@@ -60,14 +59,21 @@ pub async fn register(
     cookies.add_private(cookie);
 
     // Log successful
-    let log = CreateLog {
-        user_id: Some(result.id),
-        action: "register_successful".to_string(),
-        details: json!({
+    let log = LogBuilder::new(LogAction::Create, "user")
+        .with_user(result.id)
+        .with_resource_id(result.id.to_string())
+        .with_new_state(&json!({
             "email": result.email,
             "username": result.username,
-        }),
-    };
+            "created_at": result.created_at,
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .with_additional_details(&json!({
+            "registration_timestamp": chrono::Utc::now().to_rfc3339(),
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .build();
+
     let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({

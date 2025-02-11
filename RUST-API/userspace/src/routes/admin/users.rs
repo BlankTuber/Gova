@@ -10,7 +10,7 @@ use crate::models::log::CreateLog;
 use crate::utils::auth::is_admin;
 use crate::models::user_roles::AssignRole;
 use crate::models::user::DeleteUser;
-use crate::utils::logger::log_action;
+use crate::utils::logger::{log_action, LogAction, LogBuilder};
 
 #[post("/role/user", format="json", data="<user_data>")]
 pub async fn assign_role_to_user(
@@ -127,6 +127,19 @@ pub async fn get_all_users(
         })
     }).collect();
 
+    // Create log entry for the successful users fetch
+    let log = LogBuilder::new(LogAction::Read, "users")
+        .with_user(admin_user.user_id)
+        .with_additional_details(&json!({
+            "total_users_fetched": users.len(),
+            "fetched_by": admin_user.user_id,
+            "timestamp": chrono::Utc::now().to_rfc3339(),
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .build();
+
+    let _ = log_action(pool.inner(), &log).await;
+
     Ok(Json(json!({
         "message": "Found users!",
         "users": users_json
@@ -145,6 +158,16 @@ pub async fn delete_user(
     }
 
     let user = user_data.into_inner();
+    
+    // Fetch user data before deletion for logging
+    let user_to_delete = sqlx::query!(
+        "SELECT email, username, created_at FROM users WHERE id = $1",
+        user.id
+    )
+    .fetch_optional(pool.inner())
+    .await
+    .map_err(|_| Status::InternalServerError)?
+    .ok_or(Status::NotFound)?;
     
     // Validate incoming request data
     if let Err(_) = user.validate() {
@@ -181,13 +204,22 @@ pub async fn delete_user(
     .await;
 
     // Log successful
-    let log = CreateLog {
-        user_id: Some(admin_user.user_id),
-        action: "user_deleted_successfully".to_string(),
-        details: json!({
-            "user_id": user.id,
-        }),
-    };
+    let log = LogBuilder::new(LogAction::Delete, "user")
+        .with_user(admin_user.user_id)
+        .with_resource_id(user.id.to_string())
+        .with_previous_state(&json!({
+            "email": user_to_delete.email,
+            "username": user_to_delete.username,
+            "created_at": user_to_delete.created_at,
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .with_additional_details(&json!({
+            "deleted_by": admin_user.user_id,
+            "deletion_timestamp": chrono::Utc::now().to_rfc3339(),
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .build();
+
     let _ = log_action(pool.inner(), &log).await;
 
     match user_delete_result {

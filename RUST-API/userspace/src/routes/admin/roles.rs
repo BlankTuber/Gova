@@ -11,7 +11,7 @@ use crate::models::role::DeleteRole;
 use crate::models::role_permissions::AssignPermission;
 use crate::utils::auth::is_admin;
 use crate::middleware::verify_jwt::AuthenticatedUser;
-use crate::utils::logger::log_action;
+use crate::utils::logger::{log_action, LogAction, LogBuilder};
 
 #[post("/role", format = "json", data = "<role_data>")]
 pub async fn make_role(
@@ -72,6 +72,24 @@ pub async fn delete_role(
         return Err(Status::Forbidden);
     }
 
+    let role_info = sqlx::query!(
+        r#"
+        SELECT r.name, r.created_at,
+               COUNT(DISTINCT rp.permission_id) as permission_count,
+               COUNT(DISTINCT ur.user_id) as user_count
+        FROM roles r
+        LEFT JOIN role_permissions rp ON r.id = rp.role_id
+        LEFT JOIN user_roles ur ON r.id = ur.role_id
+        WHERE r.id = $1
+        GROUP BY r.id, r.name, r.created_at
+        "#,
+        role_data.id
+    )
+    .fetch_optional(pool.inner())
+    .await
+    .map_err(|_| Status::InternalServerError)?
+    .ok_or(Status::NotFound)?;
+
     let mut tx = pool.inner()
         .begin()
         .await
@@ -121,13 +139,25 @@ pub async fn delete_role(
         .map_err(|_| Status::InternalServerError)?;
 
     // Log successful
-    let log = CreateLog {
-        user_id: Some(user.user_id),
-        action: "role_deleted_successfully".to_string(),
-        details: json!({
-            "role_id": role_data.id,
-        }),
-    };
+    let log = LogBuilder::new(LogAction::Delete, "role")
+        .with_user(user.user_id)
+        .with_resource_id(role_data.id.to_string())
+        .with_previous_state(&json!({
+            "name": role_info.name,
+            "created_at": role_info.created_at,
+            "associations": {
+                "permissions_count": role_info.permission_count,
+                "users_count": role_info.user_count
+            }
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .with_additional_details(&json!({
+            "deleted_by": user.user_id,
+            "deletion_timestamp": chrono::Utc::now().to_rfc3339(),
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .build();
+
     let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({

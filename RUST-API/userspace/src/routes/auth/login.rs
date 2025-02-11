@@ -9,8 +9,7 @@ use crate::models::user::LoginRequest;
 use crate::utils::hashing::verify_password;
 use crate::utils::create_jwt::create_token;
 
-use crate::models::log::CreateLog;
-use crate::utils::logger::log_action;
+use crate::utils::logger::{log_action, LogAction, LogBuilder};
 
 #[post("/login", format = "json", data = "<login_data>")]
 pub async fn login(
@@ -20,7 +19,6 @@ pub async fn login(
 ) -> Result<Json<Value>, Status> {
     let credentials = login_data.into_inner();
 
-    // Validate the incoming login data
     if let Err(_) = credentials.validate() {
         return Err(Status::BadRequest);
     }
@@ -28,7 +26,7 @@ pub async fn login(
     // Fetch the user from the database
     let user = sqlx::query!(
         r#"
-        SELECT id, email, username, password_hash, created_at
+        SELECT id, email, username, password_hash, created_at, last_login
         FROM users 
         WHERE email = $1
         "#,
@@ -39,19 +37,28 @@ pub async fn login(
     .map_err(|_| Status::InternalServerError)?
     .ok_or(Status::Unauthorized)?;
 
-    // Verify the provided password
+    // Verify the password
     if !verify_password(&credentials.password, &user.password_hash)
         .map_err(|_| Status::InternalServerError)? {
+        
+        // Log failed login attempt
+        let failed_log = LogBuilder::new(LogAction::Custom("login_failed".to_string()), "auth")
+            .with_user(user.id)
+            .with_additional_details(&json!({
+                "email": credentials.email,
+                "timestamp": chrono::Utc::now().to_rfc3339(),
+                "failure_reason": "invalid_password"
+            }))
+            .map_err(|_| Status::InternalServerError)?
+            .build();
+
+        let _ = log_action(pool.inner(), &failed_log).await;
         return Err(Status::Unauthorized);
     }
 
-    // Update the user's last login timestamp
+    // Update last login
     sqlx::query!(
-        r#"
-        UPDATE users 
-        SET last_login = CURRENT_TIMESTAMP 
-        WHERE id = $1
-        "#,
+        "UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1",
         user.id
     )
     .execute(pool.inner())
@@ -74,17 +81,28 @@ pub async fn login(
     cookies.add_private(cookie);
 
     // Log successful login
-    let log = CreateLog {
-        user_id: Some(user.id),
-        action: "login_successful".to_string(),
-        details: json!({
-            "email": user.email,
-            "username": user.username,
-        }),
-    };
+    let log = LogBuilder::new(LogAction::Custom("login_successful".to_string()), "auth")
+        .with_user(user.id)
+        .with_resource_id(user.id.to_string())
+        .with_previous_state(&json!({
+            "last_login": user.last_login,
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .with_additional_details(&json!({
+            "login_info": {
+                "email": user.email,
+                "username": user.username,
+                "timestamp": chrono::Utc::now().to_rfc3339(),
+            },
+            "account_info": {
+                "account_created_at": user.created_at,
+            }
+        }))
+        .map_err(|_| Status::InternalServerError)?
+        .build();
+
     let _ = log_action(pool.inner(), &log).await;
 
-    // Respond with a success message
     Ok(Json(json!({
         "message": "Logged in successfully"
     })))
