@@ -16,7 +16,7 @@ jobs:
         run: git pull origin main
       
       - name: Run migrations
-        run: cargo sqlx migration run
+        run: cargo sqlx migrate run
         working-directory: /home/blank/userspace/RUST-API/userspace
 
       - name: Build Application
