@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO user_profiles (user_id, created_at, updated_at)\n        VALUES ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)\n        RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "3b6fafa7e56221e052fab2c0ea0b99e6c21a31600eb7cae4eb92c82a2e3a04bb"
+}

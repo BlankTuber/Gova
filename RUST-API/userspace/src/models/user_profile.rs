@@ -43,7 +43,7 @@ pub struct UpdateUserProfile {
     pub language: Option<String>,
     #[validate(length(max = 50))]
     pub timezone: Option<String>,
-    pub social_links: Option<serde_json::Value>,
+    pub social_links: Option<Value>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

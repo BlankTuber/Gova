@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT u.email, u.username, u.created_at,\n               p.display_name, p.bio, p.birth_date, p.language, p.timezone, p.social_links\n        FROM users u\n        LEFT JOIN user_profiles p ON u.id = p.user_id\n        WHERE u.id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "email",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "username",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "display_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "bio",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "birth_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 6,
+        "name": "language",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "timezone",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "social_links",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "e51635b095db04e5f962a961eaaa7e45b1dafebe049511ea0acf9b3eb5fe3be5"
+}

@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT \n            display_name, bio, birth_date, \n            language, timezone, social_links\n        FROM user_profiles \n        WHERE user_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "display_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 1,
+        "name": "bio",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "birth_date",
+        "type_info": "Date"
+      },
+      {
+        "ordinal": 3,
+        "name": "language",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "timezone",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "social_links",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "5daaa682a5a81d4c035de2b1c52ff86b350cd42e686ec3e28cd2c4d19f4ee266"
+}
