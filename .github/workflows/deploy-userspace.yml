@@ -1,0 +1,21 @@
+name: Deploy Userspace
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Build Application
+        run: cargo build --release
+        working-directory: /home/blank/userspace/RUST-API/userspace
+
+      - name: Restart userspace Service
+        run: sudo systemctl restart userspace
+        working-directory: /home/blank/userspace/RUST-API/userspace
