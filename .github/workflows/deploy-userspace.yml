@@ -25,4 +25,6 @@ jobs:
 
       - name: Restart userspace Service
         run: sudo systemctl restart userspace
-        working-directory: /home/blank/userspace/RUST-API/userspace
+
+      - name: Check status
+        run: sudo systemctl status userspace
