@@ -13,7 +13,7 @@ jobs:
         working-directory: /home/blank/userspace
     steps:
       - name: Pull latest changes
-        run: git pull
+        run: git pull origin main
 
       - name: Build Application
         run: cargo build --release
