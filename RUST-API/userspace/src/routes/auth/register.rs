@@ -26,6 +26,10 @@ pub async fn register(
     let password_hash = hash_password(&user.password)
         .map_err(|_| Status::InternalServerError)?;
 
+    // Start a transaction since we're doing multiple operations
+    let mut tx = pool.begin().await
+        .map_err(|_| Status::InternalServerError)?;
+
     let result = sqlx::query!(
         r#"
         INSERT INTO users (email, username, password_hash, last_login)
@@ -36,12 +40,29 @@ pub async fn register(
         user.username,
         password_hash,
     )
-    .fetch_one(pool.inner())
+    .fetch_one(&mut *tx)
     .await
     .map_err(|e| match e {
         sqlx::Error::Database(err) if err.is_unique_violation() => Status::Conflict,
         _ => Status::InternalServerError,
     })?;
+
+    // Create minimal user profile
+    let profile_result = sqlx::query!(
+        r#"
+        INSERT INTO user_profiles (user_id, created_at, updated_at)
+        VALUES ($1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        RETURNING id
+        "#,
+        result.id  // Using the ID from the newly created user
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| Status::InternalServerError)?;
+
+    // Commit the transaction
+    tx.commit().await
+        .map_err(|_| Status::InternalServerError)?;
 
     // Generate a JWT for the authenticated user
     let token = create_token(result.id)
@@ -58,7 +79,7 @@ pub async fn register(
     // Add the cookie to the response
     cookies.add_private(cookie);
 
-    // Log successful
+    // Log successful registration and profile creation
     let log = LogBuilder::new(LogAction::Create, "user")
         .with_user(result.id)
         .with_resource_id(result.id.to_string())
@@ -66,6 +87,7 @@ pub async fn register(
             "email": result.email,
             "username": result.username,
             "created_at": result.created_at,
+            "profile_id": profile_result.id
         }))
         .map_err(|_| Status::InternalServerError)?
         .with_additional_details(&json!({
@@ -77,6 +99,6 @@ pub async fn register(
     let _ = log_action(pool.inner(), &log).await;
 
     Ok(Json(json!({
-        "message": "User registered and logged in successfully!"
+        "message": "User registered with profile and logged in successfully!"
     })))
 }

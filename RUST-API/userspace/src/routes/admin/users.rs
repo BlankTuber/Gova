@@ -159,9 +159,15 @@ pub async fn delete_user(
 
     let user = user_data.into_inner();
     
-    // Fetch user data before deletion for logging
+    // Fetch user and profile data before deletion for logging
     let user_to_delete = sqlx::query!(
-        "SELECT email, username, created_at FROM users WHERE id = $1",
+        r#"
+        SELECT u.email, u.username, u.created_at,
+               p.display_name, p.bio, p.birth_date, p.language, p.timezone, p.social_links
+        FROM users u
+        LEFT JOIN user_profiles p ON u.id = p.user_id
+        WHERE u.id = $1
+        "#,
         user.id
     )
     .fetch_optional(pool.inner())
@@ -193,7 +199,7 @@ pub async fn delete_user(
         return Err(Status::InternalServerError);
     }
 
-    // Delete user from the database
+    // Delete user from the database (user_profiles will be cascade deleted)
     let user_delete_result = sqlx::query!(
         r#"
         DELETE FROM users WHERE id = $1
@@ -203,7 +209,7 @@ pub async fn delete_user(
     .execute(&mut *tx)
     .await;
 
-    // Log successful
+    // Log successful deletion with extended profile information
     let log = LogBuilder::new(LogAction::Delete, "user")
         .with_user(admin_user.user_id)
         .with_resource_id(user.id.to_string())
@@ -211,6 +217,14 @@ pub async fn delete_user(
             "email": user_to_delete.email,
             "username": user_to_delete.username,
             "created_at": user_to_delete.created_at,
+            "profile": {
+                "display_name": user_to_delete.display_name,
+                "bio": user_to_delete.bio,
+                "birth_date": user_to_delete.birth_date,
+                "language": user_to_delete.language,
+                "timezone": user_to_delete.timezone,
+                "social_links": user_to_delete.social_links
+            }
         }))
         .map_err(|_| Status::InternalServerError)?
         .with_additional_details(&json!({
@@ -230,7 +244,7 @@ pub async fn delete_user(
             } else {
                 // Commit the transaction if both operations succeeded
                 tx.commit().await.map_err(|_| Status::InternalServerError)?;
-                Ok(Json(json!({ "message": "User and associated roles successfully deleted!" })))
+                Ok(Json(json!({ "message": "User and associated data successfully deleted!" })))
             }
         },
         Err(_) => {

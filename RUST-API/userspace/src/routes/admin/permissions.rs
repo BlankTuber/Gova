@@ -153,7 +153,6 @@ pub async fn delete_permission(
 
     let permission = permission_result.ok_or(Status::NotFound)?;
 
-    // Enhanced logging with complete context
     let log = LogBuilder::new(LogAction::Delete, "permission")
         .with_user(user.user_id)
         .with_resource_id(permission_data.id.to_string())
