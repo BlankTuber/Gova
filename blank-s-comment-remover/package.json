@@ -37,10 +37,6 @@
       ]
     }
   },
-  "activationEvents": [
-    "onCommand:extension.removeCommentsFromFile",
-    "onCommand:extension.removeCommentsFromFolder"
-  ],
   "configuration": {
     "type": "object",
     "title": "Comment Remover Settings",
