@@ -14,6 +14,10 @@ jobs:
     steps:
       - name: Pull latest changes
         run: git pull origin main
+      
+      - name: Run migrations
+        run: cargo sqlx migration run
+        working-directory: /home/blank/userspace/RUST-API/userspace
 
       - name: Build Application
         run: cargo build --release
