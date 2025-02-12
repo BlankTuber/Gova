@@ -37,6 +37,7 @@ This learning playground explores various technologies including:
 *This repository is actively growing as new learning adventures unfold!* 🌟
 
 ### 📈 Project Status Guide
+
 - 🟢 Active - Currently under active development
 - 🟡 Stable - Working with known limitations
 - 🔴 Archived - Completed or deprecated
